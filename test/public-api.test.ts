@@ -89,6 +89,7 @@ const CHUNK_EXPORTS = [
 
 const ERASURE_CODING_EXPORTS = [
   'rsEncode',
+  'rsDecode',
   'getMaxShards',
   'getParities',
   'makeErasureBatch',
