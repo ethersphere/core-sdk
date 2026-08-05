@@ -28,8 +28,8 @@ export function stamp(
   return {
     batchId: batch,
     index,
-    issuer: privateKey.publicKey().address().toUint8Array(),
-    signature: signature.toUint8Array(),
+    issuer: privateKey.publicKey().address(),
+    signature,
     timestamp,
   }
 }

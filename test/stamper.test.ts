@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { BatchId } from '../src/bytes/batch-id.js'
 import { numberToUint256, uint16ToNumber } from '../src/bytes/encoding.js'
+import { EthAddress } from '../src/bytes/eth-address.js'
 import { PrivateKey } from '../src/bytes/private-key.js'
 import { Signature } from '../src/bytes/signature.js'
 import {
@@ -128,8 +129,8 @@ describe('convertEnvelopeToMarshaledStamp', () => {
     const batchId = new BatchId(new Uint8Array(32).fill(6))
 
     const viaEnvelope = convertEnvelopeToMarshaledStamp({
-      issuer: new Uint8Array(20),
-      signature,
+      issuer: new EthAddress(new Uint8Array(20)),
+      signature: new Signature(signature),
       timestamp,
       index,
       batchId,
@@ -148,7 +149,7 @@ describe('stamp', () => {
   it('produces an envelope whose signature verifies against the signer’s own address', () => {
     const envelope = stamp(privateKey, batchId, address, 0, 1_700_000_000_000)
 
-    expect(envelope.issuer).toEqual(privateKey.publicKey().address().toUint8Array())
+    expect(envelope.issuer.equals(privateKey.publicKey().address())).toBe(true)
 
     const digest = new Uint8Array(32 + 32 + 8 + 8)
     digest.set(address, 0)
@@ -156,8 +157,7 @@ describe('stamp', () => {
     digest.set(envelope.index, 64)
     digest.set(envelope.timestamp, 72)
 
-    const signature = new Signature(envelope.signature)
-    expect(signature.isValid(digest, privateKey.publicKey().address())).toBe(true)
+    expect(envelope.signature.isValid(digest, privateKey.publicKey().address())).toBe(true)
   })
 
   it('encodes the index as bucket (top 2 address bytes) || slot, both 4-byte BE', () => {

@@ -3,6 +3,7 @@ import { concatBytes, hexToUint8Array, numberToUint256, numberToUint64, uint256T
 import { EthAddress } from '../bytes/eth-address.js'
 import { Identifier } from '../bytes/identifier.js'
 import { Reference } from '../bytes/reference.js'
+import { Signature } from '../bytes/signature.js'
 import { Span } from '../bytes/span.js'
 import { recoverPublicKey, signMessage } from '../crypto/ecdsa.js'
 import { keccak256 } from '../crypto/keccak.js'
@@ -54,7 +55,7 @@ export interface SingleOwnerChunk {
   payload: Bytes
   address: Reference
   identifier: Identifier
-  signature: Uint8Array
+  signature: Signature
   owner: EthAddress
 }
 
@@ -107,7 +108,15 @@ export function makeSingleOwnerChunk(
   const address = makeSOCAddress(id, owner)
   const data = concatBytes(id.toUint8Array(), signature, chunk.data)
 
-  return { data, identifier: id, signature, span: chunk.span, payload: chunk.payload, address, owner }
+  return {
+    data,
+    identifier: id,
+    signature: new Signature(signature),
+    span: chunk.span,
+    payload: chunk.payload,
+    address,
+    owner,
+  }
 }
 
 /**
@@ -134,7 +143,15 @@ export function unmarshalSingleOwnerChunk(
   const span = Span.fromSlice(bytes, SOC_SPAN_OFFSET)
   const payload = Bytes.fromSlice(bytes, SOC_PAYLOAD_OFFSET)
 
-  return { data: bytes, identifier, signature, span, payload, address: socAddress, owner }
+  return {
+    data: bytes,
+    identifier,
+    signature: new Signature(signature),
+    span,
+    payload,
+    address: socAddress,
+    owner,
+  }
 }
 
 /**

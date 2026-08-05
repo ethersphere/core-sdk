@@ -1,13 +1,15 @@
 import { concatBytes } from '../bytes/encoding.js'
 import { BatchId } from '../bytes/batch-id.js'
 import { Bytes } from '../bytes/bytes.js'
+import { EthAddress } from '../bytes/eth-address.js'
+import { Signature } from '../bytes/signature.js'
 
 /** A postage stamp's fields, as produced by signing (e.g. via `stamp()`). */
 export interface Envelope {
-  issuer: Uint8Array
+  issuer: EthAddress
   index: Uint8Array
   timestamp: Uint8Array
-  signature: Uint8Array
+  signature: Signature
 }
 
 /** An {@link Envelope} with its batch ID, ready to marshal. */
@@ -44,5 +46,10 @@ export function marshalStamp(
  * Same as {@link marshalStamp}, taking the fields from an EnvelopeWithBatchId.
  */
 export function convertEnvelopeToMarshaledStamp(envelope: EnvelopeWithBatchId): Bytes {
-  return marshalStamp(envelope.signature, envelope.batchId.toUint8Array(), envelope.timestamp, envelope.index)
+  return marshalStamp(
+    envelope.signature.toUint8Array(),
+    envelope.batchId.toUint8Array(),
+    envelope.timestamp,
+    envelope.index,
+  )
 }
