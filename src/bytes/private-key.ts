@@ -19,7 +19,7 @@ export class PrivateKey extends Bytes {
    * Derives the corresponding (uncompressed) public key.
    */
   publicKey(): PublicKey {
-    const [x, y] = privateKeyToPublicKey(uint256ToNumber(this.bytes, 'BE'))
+    const [x, y] = privateKeyToPublicKey(this.toBigInt())
 
     return new PublicKey(concatBytes(numberToUint256(x, 'BE'), numberToUint256(y, 'BE')))
   }
@@ -29,8 +29,15 @@ export class PrivateKey extends Bytes {
    * keccak256("\x19Ethereum Signed Message:\n32" || keccak256(data))).
    */
   sign(data: Uint8Array | string): Signature {
-    const [r, s, v] = signMessage(personalSignDigest(data), uint256ToNumber(this.bytes, 'BE'))
+    const [r, s, v] = signMessage(personalSignDigest(data), this.toBigInt())
 
     return new Signature(concatBytes(numberToUint256(r, 'BE'), numberToUint256(s, 'BE'), new Uint8Array([Number(v)])))
+  }
+
+  /**
+   * Decodes the private key as a bigint scalar, for use in ECDSA operations.
+   */
+  toBigInt(): bigint {
+    return uint256ToNumber(this.bytes, 'BE')
   }
 }
