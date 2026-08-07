@@ -10,7 +10,7 @@ import { keccak256 } from '../crypto/keccak.js'
 import { privateKeyToPublicKey, publicKeyToAddress } from '../crypto/keys.js'
 import { encryptData, encryptSpan } from '../encryption/stream-cipher.js'
 import { calculateChunkAddress } from './bmt.js'
-import { Chunk } from './cac.js'
+import type { Chunk } from './cac.js'
 import { ChunkBuilder } from './splitter.js'
 
 /**
@@ -98,7 +98,7 @@ export function makeSOCAddress(
  * `privateKey` over the identifier and the wrapped chunk's address.
  */
 export function makeSingleOwnerChunk(
-  chunk: Chunk,
+  chunk: Pick<Chunk, 'data' | 'span' | 'payload' | 'address'>,
   identifier: Identifier | Uint8Array | string,
   privateKey: bigint,
 ): SingleOwnerChunk {
