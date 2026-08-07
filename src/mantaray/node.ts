@@ -131,9 +131,30 @@ export class MantarayNode {
       crypto.getRandomValues(this.obfuscationKey)
     }
 
+    // A null (all-zero) targetAddress means this node has no entry of its
+    // own (e.g. a metadata-only "/" node). Bee (Go) then writes a 0-byte
+    // entry, inferring refBytesSize from a fork's reference width when one
+    // exists, rather than padding the entry out to the default 32/64 bytes -
+    // matching that here keeps hashes identical to a real Bee-produced
+    // manifest for the same content.
+    const hasEntry = !equals(this.targetAddress, new Uint8Array(this.targetAddress.length))
+    let refBytesSize = 0
+
+    if (hasEntry) {
+      refBytesSize = this.targetAddress.length
+    } else {
+      for (const fork of this.forks.values()) {
+        if (fork.node.selfAddress && fork.node.selfAddress.length > 0) {
+          refBytesSize = fork.node.selfAddress.length
+          break
+        }
+      }
+    }
+
     const header = new Uint8Array(32)
     header.set(VERSION_02_HASH, 0)
-    header.set(numberToUint8(this.targetAddress.length), 31)
+    header.set(numberToUint8(refBytesSize), 31)
+    const entry = hasEntry ? this.targetAddress : new Uint8Array(refBytesSize)
 
     const forkBitmap = new Uint8Array(32)
     for (const fork of this.forks.keys()) {
@@ -147,7 +168,7 @@ export class MantarayNode {
       }
     }
 
-    const data = xorCypher(concatBytes(header, this.targetAddress, forkBitmap, ...forks), this.obfuscationKey)
+    const data = xorCypher(concatBytes(header, entry, forkBitmap, ...forks), this.obfuscationKey)
 
     return concatBytes(this.obfuscationKey, data)
   }
