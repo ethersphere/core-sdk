@@ -173,17 +173,21 @@ export class MantarayNode {
 
     const refBytesSize = uint8ToNumber(reader.read(1))
 
-    if (refBytesSize === 0) {
-      throw new Error('MantarayNode#unmarshalFromData refBytesSize is 0')
-    }
-
     const targetAddress = reader.read(refBytesSize)
     const node = new MantarayNode({ selfAddress, targetAddress, obfuscationKey })
     const forkBitmap = reader.read(32)
 
+    // Older Bee nodes could persist a node with refBytesSize=0 despite its
+    // forks still being marshaled at the standard 32-byte width - each fork's
+    // width in Bee (Go) comes from that fork's own reference length, not from
+    // the parent node's (possibly unset) refBytesSize. Falling back to 32
+    // here recovers those forks; treating 0 as "no forks" would silently
+    // drop real reference data, same as the bug fixed for marshal() itself.
+    const forkRefSize = refBytesSize === 0 ? 32 : refBytesSize
+
     for (let i = 0; i < 256; i++) {
       if (getBit(forkBitmap, i)) {
-        const fork = Fork.unmarshal(reader, refBytesSize)
+        const fork = Fork.unmarshal(reader, forkRefSize)
         node.forks.set(i, fork)
         fork.node.parent = node
       }
