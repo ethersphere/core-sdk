@@ -1,7 +1,6 @@
 {
-  "name": "swarm-core",
-  "version": "0.0.1",
-  "private": true,
+  "name": "@upcoming/swarm-core",
+  "version": "0.0.8",
   "type": "module",
   "packageManager": "pnpm@10.29.2",
   "engines": {
@@ -99,6 +98,7 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs && tsc -p tsconfig.build.json && node scripts/copy-cjs-types.mjs",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
