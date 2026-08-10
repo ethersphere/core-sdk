@@ -1,0 +1,21 @@
+# On each new commit to `main`, create/update a release PR that bumps the
+# version and updates the changelog from conventional commits. Merging that
+# PR cuts a GitHub Release, which triggers publish_npmjs.yml.
+name: Release Github
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: GoogleCloudPlatform/release-please-action@v5
+        id: release
+        with:
+          token: ${{ secrets.REPO_GHA_PAT }}
+          release-type: node
+          package-name: swarm-core
+          bump-minor-pre-major: true
