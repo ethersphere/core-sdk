@@ -70,6 +70,23 @@ export class Bytes {
   }
 
   /**
+   * Concatenates any number of byte arrays (or Bytes instances) into one new array.
+   */
+  static concat(...arrays: (Uint8Array | Bytes)[]): Uint8Array {
+    const normalized = arrays.map(array => (array instanceof Bytes ? array.toUint8Array() : array))
+    const totalLength = normalized.reduce((sum, array) => sum + array.length, 0)
+    const result = new Uint8Array(totalLength)
+    let offset = 0
+
+    for (const array of normalized) {
+      result.set(array, offset)
+      offset += array.length
+    }
+
+    return result
+  }
+
+  /**
    * Wraps the UTF-8 encoding of a string.
    */
   static fromUtf8(utf8: string): Bytes {

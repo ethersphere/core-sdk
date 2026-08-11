@@ -1,8 +1,9 @@
-import { concatBytes, numberToUint64 } from '../bytes/encoding.js'
+import { numberToUint64 } from '../bytes/encoding.js'
 import { Reference } from '../bytes/reference.js'
 import { encryptData, encryptSpan } from '../encryption/stream-cipher.js'
 import { calculateChunkAddress } from './bmt.js'
 import { Uint8ArrayReader, Uint8ArrayWriter } from './byte-cursor.js'
+import { Bytes } from '../bytes/bytes.js'
 
 // Named ChunkBuilder (not Chunk) to avoid colliding with the immutable CAC
 // `Chunk` shape in chunk/cac.ts - this is a different, mutable thing: a
@@ -25,7 +26,7 @@ export class ChunkBuilder {
    * Returns the raw chunk bytes: 8-byte span || 4096-byte payload buffer.
    */
   build(): Uint8Array {
-    return concatBytes(numberToUint64(this.span, 'LE'), this.writer.buffer)
+    return Bytes.concat(numberToUint64(this.span, 'LE'), this.writer.buffer)
   }
 
   /**
@@ -47,7 +48,7 @@ export class ChunkBuilder {
     const encSpan = encryptSpan(key, numberToUint64(this.span, 'LE'))
     const encPayload = encryptData(key, this.writer.buffer)
 
-    return { address: calculateChunkAddress(concatBytes(encSpan, encPayload)), key }
+    return { address: calculateChunkAddress(Bytes.concat(encSpan, encPayload)), key }
   }
 }
 

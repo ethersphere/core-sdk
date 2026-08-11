@@ -1,13 +1,7 @@
-import {
-  commonPrefix,
-  concatBytes,
-  numberToUint16,
-  numberToUint8,
-  uint16ToNumber,
-  uint8ToNumber,
-} from '../bytes/encoding.js'
+import { commonPrefix, numberToUint16, numberToUint8, uint16ToNumber, uint8ToNumber } from '../bytes/encoding.js'
 import { Uint8ArrayReader } from '../chunk/byte-cursor.js'
 import { MantarayNode } from './node.js'
+import { Bytes } from '../bytes/bytes.js'
 
 const TYPE_WITH_METADATA = 16
 
@@ -112,7 +106,7 @@ export class Fork {
 
     if (this.node.metadata) {
       const metadataBytes = padEndToMultiple(
-        concatBytes(new Uint8Array([0x00, 0x00]), ENCODER.encode(JSON.stringify(this.node.metadata))),
+        Bytes.concat(new Uint8Array([0x00, 0x00]), ENCODER.encode(JSON.stringify(this.node.metadata))),
         32,
         0x0a,
       )
@@ -120,7 +114,7 @@ export class Fork {
       data.push(metadataBytes)
     }
 
-    return concatBytes(...data)
+    return Bytes.concat(...data)
   }
 
   /**

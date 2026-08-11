@@ -1,6 +1,7 @@
-import { concatBytes, partition } from '../bytes/encoding.js'
+import { partition } from '../bytes/encoding.js'
 import { Reference } from '../bytes/reference.js'
 import { keccak256 } from '../crypto/keccak.js'
+import { Bytes } from '../bytes/bytes.js'
 
 const MAX_CHUNK_PAYLOAD_SIZE = 4096
 const SEGMENT_SIZE = 32
@@ -22,7 +23,7 @@ export function calculateChunkAddress(chunkContent: Uint8Array): Reference {
   const payload = chunkContent.subarray(SPAN_LENGTH)
   const rootHash = calculateBmtRootHash(payload)
 
-  return new Reference(keccak256(concatBytes(span, rootHash)))
+  return new Reference(keccak256(Bytes.concat(span, rootHash)))
 }
 
 function calculateBmtRootHash(payload: Uint8Array): Uint8Array {
@@ -37,7 +38,7 @@ function calculateBmtRootHash(payload: Uint8Array): Uint8Array {
   while (segments.length > 1) {
     const next: Uint8Array[] = []
     for (let i = 0; i < segments.length; i += 2) {
-      next.push(keccak256(concatBytes(segments[i]!, segments[i + 1]!)))
+      next.push(keccak256(Bytes.concat(segments[i]!, segments[i + 1]!)))
     }
     segments = next
   }

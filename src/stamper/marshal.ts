@@ -1,4 +1,3 @@
-import { concatBytes } from '../bytes/encoding.js'
 import { BatchId } from '../bytes/batch-id.js'
 import { Bytes } from '../bytes/bytes.js'
 import { EthAddress } from '../bytes/eth-address.js'
@@ -39,7 +38,7 @@ export function marshalStamp(
   if (index.length !== 8) {
     throw new Error('invalid index length')
   }
-  return new Bytes(concatBytes(batchId, index, timestamp, signature))
+  return new Bytes(Bytes.concat(batchId, index, timestamp, signature))
 }
 
 /**

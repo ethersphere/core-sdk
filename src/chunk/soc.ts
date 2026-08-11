@@ -1,5 +1,5 @@
 import { Bytes } from '../bytes/bytes.js'
-import { concatBytes, hexToUint8Array, numberToUint256, numberToUint64, uint256ToNumber } from '../bytes/encoding.js'
+import { hexToUint8Array, numberToUint256, numberToUint64, uint256ToNumber } from '../bytes/encoding.js'
 import { EthAddress } from '../bytes/eth-address.js'
 import { Identifier } from '../bytes/identifier.js'
 import { Reference } from '../bytes/reference.js'
@@ -60,15 +60,15 @@ export interface SingleOwnerChunk {
 }
 
 function socSigningDigest(identifier: Uint8Array, cacAddress: Uint8Array): Uint8Array {
-  const toSign = keccak256(concatBytes(identifier, cacAddress))
+  const toSign = keccak256(Bytes.concat(identifier, cacAddress))
 
-  return concatBytes(ETHEREUM_SIGNED_MESSAGE_PREFIX, toSign)
+  return Bytes.concat(ETHEREUM_SIGNED_MESSAGE_PREFIX, toSign)
 }
 
 function signSoc(identifier: Uint8Array, cacAddress: Uint8Array, privateKey: bigint): Uint8Array {
   const [r, s, v] = signMessage(socSigningDigest(identifier, cacAddress), privateKey)
 
-  return concatBytes(numberToUint256(r, 'BE'), numberToUint256(s, 'BE'), new Uint8Array([Number(v)]))
+  return Bytes.concat(numberToUint256(r, 'BE'), numberToUint256(s, 'BE'), new Uint8Array([Number(v)]))
 }
 
 function recoverSocOwner(identifier: Uint8Array, cacAddress: Uint8Array, signature: Uint8Array): Uint8Array {
@@ -90,7 +90,7 @@ export function makeSOCAddress(
   const id = new Identifier(identifier)
   const ownerAddress = new EthAddress(owner)
 
-  return new Reference(keccak256(concatBytes(id.toUint8Array(), ownerAddress.toUint8Array())))
+  return new Reference(keccak256(Bytes.concat(id.toUint8Array(), ownerAddress.toUint8Array())))
 }
 
 /**
@@ -106,7 +106,7 @@ export function makeSingleOwnerChunk(
   const signature = signSoc(id.toUint8Array(), chunk.address.toUint8Array(), privateKey)
   const owner = new EthAddress(publicKeyToAddress(privateKeyToPublicKey(privateKey)))
   const address = makeSOCAddress(id, owner)
-  const data = concatBytes(id.toUint8Array(), signature, chunk.data)
+  const data = Bytes.concat(id.toUint8Array(), signature, chunk.data)
 
   return {
     data,
@@ -210,7 +210,7 @@ export function makeReplicas(
 
   return identifiers.map(identifier => {
     const signature = signSoc(identifier, rootAddress, REPLICAS_PRIVATE_KEY)
-    const data = concatBytes(identifier, signature, rootChunk.build())
+    const data = Bytes.concat(identifier, signature, rootChunk.build())
 
     return { address: makeSOCAddress(identifier, REPLICAS_OWNER), data }
   })
@@ -230,14 +230,14 @@ export function makeEncryptedReplicas(
 
   const encryptedAddress = rootChunk.encryptedHash(key).address.toUint8Array()
   const identifiers = replicaIdentifiers(encryptedAddress, redundancyLevel)
-  const encryptedBody = concatBytes(
+  const encryptedBody = Bytes.concat(
     encryptSpan(key, numberToUint64(rootChunk.span, 'LE')),
     encryptData(key, rootChunk.writer.buffer),
   )
 
   return identifiers.map(identifier => {
     const signature = signSoc(identifier, encryptedAddress, REPLICAS_PRIVATE_KEY)
-    const data = concatBytes(identifier, signature, encryptedBody)
+    const data = Bytes.concat(identifier, signature, encryptedBody)
 
     return { address: makeSOCAddress(identifier, REPLICAS_OWNER), data }
   })

@@ -1,4 +1,3 @@
-import { concatBytes } from '../bytes/encoding.js'
 import { Bytes } from '../bytes/bytes.js'
 import { Identifier } from '../bytes/identifier.js'
 import { PrivateKey } from '../bytes/private-key.js'
@@ -58,7 +57,7 @@ export function makeContentAddressedChunk(rawPayload: Bytes | Uint8Array | strin
       : span
     : Span.fromBigInt(BigInt(rawPayload.length))
   const payload = new Bytes(rawPayload)
-  const data = concatBytes(typedSpan.toUint8Array(), payload.toUint8Array())
+  const data = Bytes.concat(typedSpan.toUint8Array(), payload.toUint8Array())
   const address = calculateChunkAddress(data)
 
   const chunk: Chunk = {

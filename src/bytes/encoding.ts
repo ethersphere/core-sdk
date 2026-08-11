@@ -58,20 +58,6 @@ export function indexOf(bytes: Uint8Array, value: Uint8Array, start = 0): number
 }
 
 /**
- * Concatenates any number of byte arrays into one new array.
- */
-export function concatBytes(...arrays: Uint8Array[]): Uint8Array {
-  const totalLength = arrays.reduce((sum, array) => sum + array.length, 0)
-  const result = new Uint8Array(totalLength)
-  let offset = 0
-  for (const array of arrays) {
-    result.set(array, offset)
-    offset += array.length
-  }
-  return result
-}
-
-/**
  * Encodes bytes as a lowercase hex string, with no `0x` prefix.
  */
 export function uint8ArrayToHex(bytes: Uint8Array): string {

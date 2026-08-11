@@ -1,6 +1,6 @@
 import { compressPublicKey, publicKeyFromCompressed, publicKeyToAddress } from '../crypto/keys.js'
 import { Bytes } from './bytes.js'
-import { concatBytes, numberToUint256, uint256ToNumber, uint8ArrayToHex } from './encoding.js'
+import { numberToUint256, uint256ToNumber, uint8ArrayToHex } from './encoding.js'
 import { EthAddress } from './eth-address.js'
 
 /**
@@ -15,7 +15,7 @@ export class PublicKey extends Bytes {
 
     if (uncompressed.length === 33) {
       const [x, y] = publicKeyFromCompressed(uncompressed.toUint8Array())
-      super(concatBytes(numberToUint256(x, 'BE'), numberToUint256(y, 'BE')), 64)
+      super(Bytes.concat(numberToUint256(x, 'BE'), numberToUint256(y, 'BE')), 64)
     } else {
       super(bytes, 64)
     }

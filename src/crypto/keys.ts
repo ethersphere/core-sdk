@@ -1,6 +1,7 @@
 import { secp256k1 } from '@noble/curves/secp256k1.js'
-import { concatBytes, numberToUint256, uint8ArrayToHex } from '../bytes/encoding.js'
+import { numberToUint256, uint8ArrayToHex } from '../bytes/encoding.js'
 import { keccak256 } from './keccak.js'
+import { Bytes } from '../bytes/bytes.js'
 
 /** The order of the secp256k1 curve's generator point. */
 export const SECP256K1_N = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n
@@ -41,7 +42,7 @@ export function publicKeyFromCompressed(compressed: Uint8Array): [bigint, bigint
  */
 export function publicKeyToAddress(publicKey: [bigint, bigint]): Uint8Array {
   const address = new Uint8Array(20)
-  const hash = keccak256(concatBytes(numberToUint256(publicKey[0], 'BE'), numberToUint256(publicKey[1], 'BE')))
+  const hash = keccak256(Bytes.concat(numberToUint256(publicKey[0], 'BE'), numberToUint256(publicKey[1], 'BE')))
   address.set(hash.subarray(12))
   return address
 }
