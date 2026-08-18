@@ -1,12 +1,22 @@
 # On each new commit to `main`, create/update a release PR that bumps the
 # version and updates the changelog from conventional commits. Merging that
 # PR cuts a GitHub Release, which triggers publish_npmjs.yml.
+#
+# Release behaviour (package name, release-type, bump-minor-pre-major) lives in
+# release-please-config.json, NOT in `with:` here. The v5 action silently
+# ignores `package-name` and `bump-minor-pre-major` as inputs -- it warns and
+# carries on -- so setting them here has no effect. Current version is tracked
+# in .release-please-manifest.json.
 name: Release Github
 
 on:
   push:
     branches:
       - main
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   release-please:
@@ -15,7 +25,4 @@ jobs:
       - uses: GoogleCloudPlatform/release-please-action@v5
         id: release
         with:
-          token: ${{ secrets.REPO_GHA_PAT }}
-          release-type: node
-          package-name: swarm-core
-          bump-minor-pre-major: true
+          token: ${{ secrets.GHA_PAT_BASIC }}
