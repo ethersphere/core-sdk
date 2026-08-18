@@ -23,12 +23,24 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Publish with the npm CLI, NOT `pnpm publish`.
+      #
+      # setup-node's `registry-url` writes an .npmrc containing
+      # //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}, and with no token
+      # supplied NODE_AUTH_TOKEN is the literal placeholder XXXXX-XXXXX-XXXXX-XXXXX.
+      # npm >= 11.5.1 notices OIDC is available and overrides that placeholder with
+      # a real trusted-publishing token; pnpm 10.29.2 sent the placeholder as-is and
+      # the registry answered `404 PUT` -- npm's masked "not authorised".
+      #
+      # Node 24 is what pins npm to 11.x. This mirrors swarm-cli, which publishes
+      # this way successfully. pnpm still does install/build above; only the
+      # publish call changes.
       - name: Publish
-        run: pnpm publish --provenance --access public --no-git-checks
+        run: npm publish --provenance --access public
