@@ -1,9 +1,10 @@
-import { concatBytes, numberToUint64, uint64ToNumber } from '../bytes/encoding.js'
+import { numberToUint64, uint64ToNumber } from '../bytes/encoding.js'
 import { ChunkBuilder, ChunkEntry } from '../chunk/splitter.js'
 import { encryptData, encryptSpan } from '../encryption/stream-cipher.js'
 import { getParities } from './levels.js'
 import { rsEncode } from './reed-solomon.js'
 import { encodeRedundancyLevel } from './span.js'
+import { Bytes } from '../bytes/bytes.js'
 
 // Constructs a ChunkBuilder from a 4104-byte raw shard (8-byte LE span + 4096-byte data).
 function chunkFromBytes(bytes: Uint8Array): ChunkBuilder {
@@ -50,7 +51,7 @@ export function makeErasureBatch(
       if (parityCount === 0) return []
 
       const shardBytes = batch.map(({ chunk, key }) =>
-        concatBytes(encryptSpan(key!, numberToUint64(chunk.span, 'LE')), encryptData(key!, chunk.writer.buffer)),
+        Bytes.concat(encryptSpan(key!, numberToUint64(chunk.span, 'LE')), encryptData(key!, chunk.writer.buffer)),
       )
       const parityShards = rsEncode(shardBytes, parityCount)
       const parityEntries: ChunkEntry[] = []

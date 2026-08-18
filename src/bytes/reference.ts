@@ -1,4 +1,4 @@
-import { base32ToUint8Array, concatBytes, uint8ArrayToBase32 } from './encoding.js'
+import { base32ToUint8Array, uint8ArrayToBase32 } from './encoding.js'
 import { Bytes } from './bytes.js'
 
 const SWARM_MANIFEST_CODEC = 0xfa
@@ -39,7 +39,7 @@ export class Reference extends Bytes {
    * Encodes the reference as a `"bah5..."` CID string of the given type.
    */
   toCid(type: 'feed' | 'manifest'): string {
-    const header = concatBytes(
+    const header = Bytes.concat(
       new Uint8Array([1]), // version
       new Uint8Array([type === 'feed' ? SWARM_FEED_CODEC : SWARM_MANIFEST_CODEC]),
       new Uint8Array([1]), // "unknown" multihash

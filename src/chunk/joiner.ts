@@ -1,6 +1,7 @@
-import { concatBytes, uint64ToNumber } from '../bytes/encoding.js'
+import { uint64ToNumber } from '../bytes/encoding.js'
 import { decryptChunk } from '../encryption/stream-cipher.js'
 import { decodeRedundancyLevel, referenceCount } from '../erasure-coding/span.js'
+import { Bytes } from '../bytes/bytes.js'
 
 function isAllZero(bytes: Uint8Array): boolean {
   for (let i = 0; i < bytes.length; i++) {
@@ -40,7 +41,7 @@ export class ChunkJoiner {
       parts.push(data)
     }).join(address)
 
-    return concatBytes(...parts)
+    return Bytes.concat(...parts)
   }
 
   /**
@@ -61,7 +62,7 @@ export class ChunkJoiner {
       true,
     ).join(address, key)
 
-    return concatBytes(...parts)
+    return Bytes.concat(...parts)
   }
 
   /**

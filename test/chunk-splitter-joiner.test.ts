@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { concatBytes, numberToUint64, uint8ArrayToHex } from '../src/bytes/encoding.js'
+import {numberToUint64, uint8ArrayToHex} from '../src/bytes/encoding.js'
 import { makeContentAddressedChunk } from '../src/chunk/cac.js'
 import { ChunkJoiner } from '../src/chunk/joiner.js'
 import { ChunkBuilder, ChunkEntry, ChunkSplitter } from '../src/chunk/splitter.js'
 import { encryptData, encryptSpan } from '../src/encryption/stream-cipher.js'
 import { getMaxShards, makeErasureBatch, makeIntermediateChunkHandler } from '../src/erasure-coding/index.js'
+import { Bytes } from '../src/bytes/bytes.js'
 
 // Captures every sealed chunk (leaf and intermediate) as onBatch sees them,
 // so a ChunkJoiner can later fetch them back out by address.
@@ -20,7 +21,7 @@ function makeStorage() {
         const { address } = chunk.encryptedHash(key)
         const encSpan = encryptSpan(key, numberToUint64(chunk.span, 'LE'))
         const encPayload = encryptData(key, chunk.writer.buffer)
-        store.set(uint8ArrayToHex(address.toUint8Array()), concatBytes(encSpan, encPayload))
+        store.set(uint8ArrayToHex(address.toUint8Array()), Bytes.concat(encSpan, encPayload))
       } else {
         store.set(uint8ArrayToHex(chunk.hash().toUint8Array()), chunk.build())
       }
@@ -98,7 +99,7 @@ describe('ChunkSplitter + ChunkJoiner round-trip', () => {
     const { address, key } = root.encryptedHash()
     const encSpan = encryptSpan(key, numberToUint64(root.span, 'LE'))
     const encPayload = encryptData(key, root.writer.buffer)
-    storage.put(address.toUint8Array(), concatBytes(encSpan, encPayload))
+    storage.put(address.toUint8Array(), Bytes.concat(encSpan, encPayload))
 
     const collected = await ChunkJoiner.collectEncrypted(address.toUint8Array(), key, storage.fetch)
     expect(collected).toEqual(data)
@@ -164,7 +165,7 @@ describe('ChunkSplitter + ChunkJoiner round-trip with erasure coding', () => {
     const { address, key } = root.encryptedHash()
     const encSpan = encryptSpan(key, numberToUint64(root.span, 'LE'))
     const encPayload = encryptData(key, root.writer.buffer)
-    storage.put(address.toUint8Array(), concatBytes(encSpan, encPayload))
+    storage.put(address.toUint8Array(), Bytes.concat(encSpan, encPayload))
 
     const collected = await ChunkJoiner.collectEncrypted(address.toUint8Array(), key, storage.fetch)
     expect(collected).toEqual(data)

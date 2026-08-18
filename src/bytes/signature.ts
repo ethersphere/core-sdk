@@ -1,7 +1,7 @@
 import { recoverPublicKey } from '../crypto/ecdsa.js'
 import { keccak256 } from '../crypto/keccak.js'
 import { Bytes } from './bytes.js'
-import { concatBytes, numberToUint256, uint256ToNumber } from './encoding.js'
+import { numberToUint256, uint256ToNumber } from './encoding.js'
 import { EthAddress } from './eth-address.js'
 import { PublicKey } from './public-key.js'
 
@@ -17,7 +17,7 @@ const ETHEREUM_SIGNED_MESSAGE_PREFIX = ENCODER.encode('\x19Ethereum Signed Messa
 export function personalSignDigest(data: Uint8Array | string): Uint8Array {
   const bytes = data instanceof Uint8Array ? data : ENCODER.encode(data)
 
-  return concatBytes(ETHEREUM_SIGNED_MESSAGE_PREFIX, keccak256(bytes))
+  return Bytes.concat(ETHEREUM_SIGNED_MESSAGE_PREFIX, keccak256(bytes))
 }
 
 /**
@@ -47,7 +47,7 @@ export class Signature extends Bytes {
     const v = BigInt(this.bytes[64]!) as 27n | 28n
     const [x, y] = recoverPublicKey(personalSignDigest(digest), r, s, v)
 
-    return new PublicKey(concatBytes(numberToUint256(x, 'BE'), numberToUint256(y, 'BE')))
+    return new PublicKey(Bytes.concat(numberToUint256(x, 'BE'), numberToUint256(y, 'BE')))
   }
 
   /**

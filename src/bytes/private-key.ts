@@ -1,7 +1,7 @@
 import { signMessage } from '../crypto/ecdsa.js'
 import { privateKeyToPublicKey } from '../crypto/keys.js'
 import { Bytes } from './bytes.js'
-import { concatBytes, numberToUint256, uint256ToNumber } from './encoding.js'
+import { numberToUint256, uint256ToNumber } from './encoding.js'
 import { PublicKey } from './public-key.js'
 import { personalSignDigest, Signature } from './signature.js'
 
@@ -21,7 +21,7 @@ export class PrivateKey extends Bytes {
   publicKey(): PublicKey {
     const [x, y] = privateKeyToPublicKey(this.toBigInt())
 
-    return new PublicKey(concatBytes(numberToUint256(x, 'BE'), numberToUint256(y, 'BE')))
+    return new PublicKey(Bytes.concat(numberToUint256(x, 'BE'), numberToUint256(y, 'BE')))
   }
 
   /**
@@ -31,7 +31,7 @@ export class PrivateKey extends Bytes {
   sign(data: Uint8Array | string): Signature {
     const [r, s, v] = signMessage(personalSignDigest(data), this.toBigInt())
 
-    return new Signature(concatBytes(numberToUint256(r, 'BE'), numberToUint256(s, 'BE'), new Uint8Array([Number(v)])))
+    return new Signature(Bytes.concat(numberToUint256(r, 'BE'), numberToUint256(s, 'BE'), new Uint8Array([Number(v)])))
   }
 
   /**

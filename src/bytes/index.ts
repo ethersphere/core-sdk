@@ -3,7 +3,6 @@ export {
   base64ToUint8Array,
   binaryToUint8Array,
   commonPrefix,
-  concatBytes,
   equals,
   hexToUint8Array,
   indexOf,

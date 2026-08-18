@@ -1,17 +1,10 @@
-import {
-  commonPrefix,
-  concatBytes,
-  equals,
-  hexToUint8Array,
-  indexOf,
-  numberToUint8,
-  uint8ToNumber,
-} from '../bytes/encoding.js'
+import { commonPrefix, equals, hexToUint8Array, indexOf, numberToUint8, uint8ToNumber } from '../bytes/encoding.js'
 import { Reference } from '../bytes/reference.js'
 import { Uint8ArrayReader } from '../chunk/byte-cursor.js'
 import { ChunkBuilder, ChunkEntry, ChunkSplitter } from '../chunk/splitter.js'
 import { xorCypher } from '../encryption/xor-cipher.js'
 import { Fork } from './fork.js'
+import { Bytes } from '../bytes/bytes.js'
 
 const ENCODER = new TextEncoder()
 const DECODER = new TextDecoder()
@@ -106,7 +99,7 @@ export class MantarayNode {
    * ancestor's own path segment.
    */
   get fullPath(): Uint8Array {
-    return concatBytes(this.parent?.fullPath ?? new Uint8Array(0), this.path)
+    return Bytes.concat(this.parent?.fullPath ?? new Uint8Array(0), this.path)
   }
 
   /**
@@ -168,9 +161,9 @@ export class MantarayNode {
       }
     }
 
-    const data = xorCypher(concatBytes(header, entry, forkBitmap, ...forks), this.obfuscationKey)
+    const data = xorCypher(Bytes.concat(header, entry, forkBitmap, ...forks), this.obfuscationKey)
 
-    return concatBytes(this.obfuscationKey, data)
+    return Bytes.concat(this.obfuscationKey, data)
   }
 
   /**
@@ -295,7 +288,7 @@ export class MantarayNode {
     parent.forks.delete(path.slice(matchedPath.length)[0]!)
 
     for (const fork of match.forks.values()) {
-      parent.addFork(concatBytes(match.path, fork.prefix), fork.node.targetAddress, fork.node.metadata)
+      parent.addFork(Bytes.concat(match.path, fork.prefix), fork.node.targetAddress, fork.node.metadata)
     }
   }
 
@@ -345,7 +338,7 @@ export class MantarayNode {
     if (this.encrypt) {
       const { address, key } = rootChunk.encryptedHash()
       await onChunk(rootChunk, key)
-      this.selfAddress = concatBytes(address.toUint8Array(), key)
+      this.selfAddress = Bytes.concat(address.toUint8Array(), key)
 
       return { reference: this.selfAddress, rootChunk, encryptionKey: key }
     }
@@ -379,7 +372,7 @@ export class MantarayNode {
     const fork = this.forks.get(path[0]!)
 
     if (fork && commonPrefix(fork.prefix, path).length === fork.prefix.length) {
-      return fork.node.findClosest(path.slice(fork.prefix.length), concatBytes(current, fork.prefix))
+      return fork.node.findClosest(path.slice(fork.prefix.length), Bytes.concat(current, fork.prefix))
     }
 
     return [this, current]

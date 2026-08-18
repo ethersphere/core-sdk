@@ -1,7 +1,8 @@
 import { BatchId } from '../bytes/batch-id.js'
-import { concatBytes, numberToUint32, numberToUint64, uint16ToNumber } from '../bytes/encoding.js'
+import { numberToUint32, numberToUint64, uint16ToNumber } from '../bytes/encoding.js'
 import { PrivateKey } from '../bytes/private-key.js'
 import { EnvelopeWithBatchId } from './marshal.js'
+import { Bytes } from '../bytes/bytes.js'
 
 /**
  * Signs a single chunk address into a postage stamp envelope.
@@ -20,10 +21,10 @@ export function stamp(
   const privateKey = new PrivateKey(signer)
   const batch = new BatchId(batchId)
   const bucket = uint16ToNumber(address, 'BE')
-  const index = concatBytes(numberToUint32(bucket, 'BE'), numberToUint32(slot, 'BE'))
+  const index = Bytes.concat(numberToUint32(bucket, 'BE'), numberToUint32(slot, 'BE'))
   const timestamp = numberToUint64(BigInt(timestampMs) * 1_000_000n, 'BE') // Bee uses unix nanoseconds
 
-  const signature = privateKey.sign(concatBytes(address, batch.toUint8Array(), index, timestamp))
+  const signature = privateKey.sign(Bytes.concat(address, batch.toUint8Array(), index, timestamp))
 
   return {
     batchId: batch,
