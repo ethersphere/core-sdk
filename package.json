@@ -1,6 +1,6 @@
 {
-  "name": "@upcoming/swarm-core",
-  "version": "0.0.8",
+  "name": "@ethersphere/core-sdk",
+  "version": "0.0.1",
   "type": "module",
   "packageManager": "pnpm@10.29.2",
   "engines": {
