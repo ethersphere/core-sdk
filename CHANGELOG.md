@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/ethersphere/core-sdk/compare/core-sdk-v0.1.0...core-sdk-v0.1.1) (2026-08-18)
+
+
+### Bug Fixes
+
+* **ci:** publish with the npm CLI so OIDC trusted publishing works ([9084e30](https://github.com/ethersphere/core-sdk/commit/9084e3019c4e8e8878972833b6cea55ba5e5a694))
+* **ci:** publish with the npm CLI so OIDC trusted publishing works ([4907740](https://github.com/ethersphere/core-sdk/commit/4907740b64d040d9d38de6904205f59a7947443b))
+
 ## [0.1.0](https://github.com/ethersphere/core-sdk/compare/core-sdk-v0.0.1...core-sdk-v0.1.0) (2026-08-18)
 
 
