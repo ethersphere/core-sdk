@@ -7,20 +7,20 @@ No network I/O — this library only builds and parses Swarm's on-disk/on-wire d
 ## Install
 
 ```sh
-npm install @ethersphere/swarm-core
+npm install @ethersphere/core-sdk
 ```
 
 Ships as both ESM and CommonJS, with full TypeScript types. Import from the subpath you need:
 
 ```ts
-import { Bytes, Reference } from 'swarm-core/bytes'
-import { makeContentAddressedChunk } from 'swarm-core/chunk'
+import { Bytes, Reference } from '@ethersphere/core-sdk/bytes'
+import { makeContentAddressedChunk } from '@ethersphere/core-sdk/chunk'
 ```
 
 ## Quick example
 
 ```ts
-import { makeContentAddressedChunk } from 'swarm-core/chunk'
+import { makeContentAddressedChunk } from '@ethersphere/core-sdk/chunk'
 
 const chunk = makeContentAddressedChunk('Hello, Swarm!')
 console.log(chunk.address.toHex())
@@ -30,15 +30,15 @@ console.log(chunk.address.toHex())
 
 | Subpath | Contents |
 |---|---|
-| `swarm-core/bytes` | `Bytes` and typed wrappers (`Reference`, `BatchId`, `EthAddress`, `PrivateKey`, `PublicKey`, `Signature`, `Span`, `Topic`, `Identifier`, `FeedIndex`, `PeerAddress`, `TransactionId`) plus low-level encoding helpers (hex/base32/base64, concat, slice, integer packing) |
-| `swarm-core/crypto` | Keccak-256, ECDSA sign/recover/verify, public/private key derivation |
-| `swarm-core/chunk` | Content Addressed Chunks (CAC), Single Owner Chunks (SOC/SOC replicas), the BMT chunk hash, and `ChunkSplitter`/`ChunkJoiner` for building and reconstructing chunk trees |
-| `swarm-core/mantaray` | `MantarayNode` — the manifest trie used for directory/collection uploads |
-| `swarm-core/erasure-coding` | Reed-Solomon parity, redundancy-level tables, and the batching logic used to add parity chunks to a stream |
-| `swarm-core/encryption` | Chunk-level stream cipher and XOR helpers |
-| `swarm-core/stamper` | Postage stamp signing (`Stamper`, `stamp()`) and effective-capacity math |
+| `@ethersphere/core-sdk/bytes` | `Bytes` and typed wrappers (`Reference`, `BatchId`, `EthAddress`, `PrivateKey`, `PublicKey`, `Signature`, `Span`, `Topic`, `Identifier`, `FeedIndex`, `PeerAddress`, `TransactionId`) plus low-level encoding helpers (hex/base32/base64, concat, slice, integer packing) |
+| `@ethersphere/core-sdk/crypto` | Keccak-256, ECDSA sign/recover/verify, public/private key derivation |
+| `@ethersphere/core-sdk/chunk` | Content Addressed Chunks (CAC), Single Owner Chunks (SOC/SOC replicas), the BMT chunk hash, and `ChunkSplitter`/`ChunkJoiner` for building and reconstructing chunk trees |
+| `@ethersphere/core-sdk/mantaray` | `MantarayNode` — the manifest trie used for directory/collection uploads |
+| `@ethersphere/core-sdk/erasure-coding` | Reed-Solomon parity, redundancy-level tables, and the batching logic used to add parity chunks to a stream |
+| `@ethersphere/core-sdk/encryption` | Chunk-level stream cipher and XOR helpers |
+| `@ethersphere/core-sdk/stamper` | Postage stamp signing (`Stamper`, `stamp()`) and effective-capacity math |
 
-Every subpath is also re-exported from the package root (`swarm-core`), so `import { Bytes } from 'swarm-core'` works too.
+Every subpath is also re-exported from the package root (`@ethersphere/core-sdk`), so `import { Bytes } from '@ethersphere/core-sdk'` works too.
 
 ## Development
 

@@ -15,7 +15,7 @@ jobs:
       - uses: GoogleCloudPlatform/release-please-action@v5
         id: release
         with:
-          token: ${{ secrets.REPO_GHA_PAT }}
+          token: ${{ secrets.GHA_PAT_BASIC }}
           release-type: node
-          package-name: swarm-core
+          package-name: core-sdk
           bump-minor-pre-major: true
