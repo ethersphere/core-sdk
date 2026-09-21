@@ -6,8 +6,6 @@ const ENCODER = new TextEncoder()
 
 const HEX_PATTERN = /^(0x)?[0-9a-fA-F]*$/i
 
-const INSPECT: unique symbol = Symbol.for('nodejs.util.inspect.custom')
-
 function hasToHexMethod(value: unknown): value is { toHex(): string } {
   return typeof value === 'object' && value !== null && typeof (value as { toHex?: unknown }).toHex === 'function'
 }
@@ -186,7 +184,7 @@ export class Bytes {
   /**
    * Printed as its hex string by `console.log` and `util.inspect` in Node.
    */
-  public [INSPECT](): string {
+  public [Symbol.for('nodejs.util.inspect.custom')](): string {
     return this.represent()
   }
 }
