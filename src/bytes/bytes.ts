@@ -154,10 +154,17 @@ export class Bytes {
   }
 
   /**
-   * Decodes the bytes as UTF-8 JSON.
+   * Parses the bytes as UTF-8 JSON.
    */
-  public toJSON(): unknown {
+  public parseJson(): unknown {
     return JSON.parse(this.toUtf8())
+  }
+
+  /**
+   * Serialized as its hex string by `JSON.stringify`.
+   */
+  public toJSON(): string {
+    return this.toHex()
   }
 
   /**
@@ -172,5 +179,12 @@ export class Bytes {
    */
   public represent(): string {
     return this.toHex()
+  }
+
+  /**
+   * Printed as its hex string by `console.log` and `util.inspect` in Node.
+   */
+  public [Symbol.for('nodejs.util.inspect.custom')](): string {
+    return this.represent()
   }
 }
