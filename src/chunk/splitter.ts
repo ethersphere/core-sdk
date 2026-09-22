@@ -231,6 +231,8 @@ export class ChunkSplitter {
     if (this.counters[level] === 1) {
       await this.elevate(level + 1)
       await this.flushBatch(level + 1)
+      // the promoted node's own children are still pending
+      await this.sealParities(level)
       this.chunks[level + 1] = this.chunks[level]!
 
       return this.finalize(level + 1)
