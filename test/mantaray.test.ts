@@ -136,13 +136,33 @@ describe('MantarayNode marshal/unmarshal round-trip', () => {
 })
 
 describe('MantarayNode.calculateSelfAddress / saveRecursively', () => {
-  it('calculateSelfAddress is deterministic for identical trees', async () => {
+  it('calculateSelfAddress differs for identical trees, from their random obfuscation keys', async () => {
     const a = new MantarayNode()
     a.addFork('foo', arbitraryReference())
     const b = new MantarayNode()
     b.addFork('foo', arbitraryReference())
 
-    expect((await a.calculateSelfAddress()).toHex()).toBe((await b.calculateSelfAddress()).toHex())
+    expect((await a.calculateSelfAddress()).toHex()).not.toBe((await b.calculateSelfAddress()).toHex())
+  })
+
+  it('calculateSelfAddress is stable across calls on one tree', async () => {
+    const node = new MantarayNode()
+    node.addFork('foo', arbitraryReference())
+
+    expect((await node.calculateSelfAddress()).toHex()).toBe((await node.calculateSelfAddress()).toHex())
+  })
+
+  it('calculateSelfAddress is deterministic when every node key is given', async () => {
+    const key = new Uint8Array(32).fill(7)
+    const build = () => {
+      const root = new MantarayNode({ obfuscationKey: key })
+      root.addFork('foo', arbitraryReference())
+      root.find('foo')!.obfuscationKey = key
+
+      return root
+    }
+
+    expect((await build().calculateSelfAddress()).toHex()).toBe((await build().calculateSelfAddress()).toHex())
   })
 
   it('calculateSelfAddress throws for an encrypted node (use saveRecursively instead)', async () => {
