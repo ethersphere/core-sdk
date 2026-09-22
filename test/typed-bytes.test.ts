@@ -1,3 +1,4 @@
+import { inspect } from 'node:util'
 import { describe, expect, it } from 'vitest'
 import { keccak256 } from '../src/crypto/keccak.js'
 import { BatchId } from '../src/bytes/batch-id.js'
@@ -63,7 +64,22 @@ describe('Bytes', () => {
 
   it('parses JSON from its UTF-8 content', () => {
     const bytes = Bytes.fromUtf8(JSON.stringify({ a: 1 }))
-    expect(bytes.toJSON()).toEqual({ a: 1 })
+    expect(bytes.parseJson()).toEqual({ a: 1 })
+  })
+
+  it('stringifies to hex, standalone and as a property', () => {
+    const id = new BatchId('ab'.repeat(32))
+    expect(id.toJSON()).toBe('ab'.repeat(32))
+    expect(JSON.stringify(id)).toBe(`"${'ab'.repeat(32)}"`)
+    expect(JSON.stringify({ id })).toBe(`{"id":"${'ab'.repeat(32)}"}`)
+    expect(`${id}`).toBe('ab'.repeat(32))
+  })
+
+  it('inspects as hex, standalone and nested', () => {
+    const id = new BatchId('ab'.repeat(32))
+    expect(inspect(id)).toBe('ab'.repeat(32))
+    expect(inspect({ id }, { breakLength: Infinity })).toBe(`{ id: ${'ab'.repeat(32)} }`)
+    expect(inspect([new Span('0102030405060708')])).toBe('[ 0102030405060708 ]')
   })
 
   it('static keccak256 matches the direct function', () => {
