@@ -110,6 +110,7 @@
     "build": "node scripts/build.mjs && tsc -p tsconfig.build.json && node scripts/copy-cjs-types.mjs",
     "prepublishOnly": "npm run typecheck && npm run test && npm run build",
     "typecheck": "tsc --noEmit",
+    "pretest": "node test/fixtures/generate.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "bench": "vitest bench --run --outputJson .tmp/bench-report.json && node scripts/check-bench-regression.mjs .tmp/bench-report.json",
