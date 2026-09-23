@@ -25,6 +25,14 @@ function setBit(bytes: Uint8Array, index: number): void {
   bytes[byteIndex] = bytes[byteIndex]! | (1 << bitIndex)
 }
 
+// Random per node, so structurally identical nodes get distinct addresses instead of colliding in one postage bucket.
+function randomObfuscationKey(): Uint8Array {
+  const key = new Uint8Array(32)
+  crypto.getRandomValues(key)
+
+  return key
+}
+
 function getBit(bytes: Uint8Array, index: number): boolean {
   const byteIndex = Math.floor(index / 8)
   const bitIndex = index % 8
@@ -50,7 +58,7 @@ interface MantarayNodeOptions {
  * single-byte-keyed edges to child nodes, each carrying a shared path prefix.
  */
 export class MantarayNode {
-  public obfuscationKey: Uint8Array = new Uint8Array(32)
+  public obfuscationKey: Uint8Array
   public selfAddress: Uint8Array | null = null
   public targetAddress: Uint8Array = new Uint8Array(32)
   public metadata: Record<string, string> | undefined | null = null
@@ -79,9 +87,7 @@ export class MantarayNode {
       this.metadata = options.metadata
     }
 
-    if (options?.obfuscationKey) {
-      this.obfuscationKey = options.obfuscationKey
-    }
+    this.obfuscationKey = options?.obfuscationKey ?? randomObfuscationKey()
 
     if (options?.path) {
       this.path = options.path
@@ -119,17 +125,10 @@ export class MantarayNode {
       }
     }
 
-    if (this.encrypt && equals(this.obfuscationKey, new Uint8Array(32))) {
-      this.obfuscationKey = new Uint8Array(32)
-      crypto.getRandomValues(this.obfuscationKey)
-    }
-
     // A null (all-zero) targetAddress means this node has no entry of its
     // own (e.g. a metadata-only "/" node). Bee (Go) then writes a 0-byte
     // entry, inferring refBytesSize from a fork's reference width when one
-    // exists, rather than padding the entry out to the default 32/64 bytes -
-    // matching that here keeps hashes identical to a real Bee-produced
-    // manifest for the same content.
+    // exists, rather than padding the entry out to the default 32/64 bytes.
     const hasEntry = !equals(this.targetAddress, new Uint8Array(this.targetAddress.length))
     let refBytesSize = 0
 
