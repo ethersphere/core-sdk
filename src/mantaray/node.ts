@@ -14,6 +14,7 @@ const TYPE_EDGE = 4
 const TYPE_WITH_PATH_SEPARATOR = 8
 const TYPE_WITH_METADATA = 16
 const PATH_SEPARATOR = new Uint8Array([47])
+const MAX_FORK_PREFIX_LENGTH = 30
 const VERSION_02_HASH = hexToUint8Array('5768b3b6a7db56d21d1abff40d41cebfc83448fed8d7e9b06ec0d3b073f28f7b')
 
 // Mantaray's per-node fork bitmap is always bit-indexed little-endian - the
@@ -223,8 +224,8 @@ export class MantarayNode {
     let tip: MantarayNode = this
 
     while (path.length) {
-      const prefix = path.slice(0, 30)
-      path = path.slice(30)
+      const prefix = path.slice(0, MAX_FORK_PREFIX_LENGTH)
+      path = path.slice(MAX_FORK_PREFIX_LENGTH)
       const isLast = path.length === 0
 
       const [bestMatch, matchedPath] = tip.findClosest(prefix)
@@ -235,6 +236,12 @@ export class MantarayNode {
       }
 
       if (!remainingPath.length) {
+        if (isLast) {
+          tip.targetAddress = new Reference(reference).toUint8Array()
+          tip.metadata = metadata ?? null
+          tip.invalidate()
+        }
+
         continue
       }
 
@@ -259,9 +266,18 @@ export class MantarayNode {
         newFork.node.parent = tip
       }
 
-      tip.selfAddress = null
-      tip.type = null
+      tip.invalidate()
       tip = newFork.node
+    }
+  }
+
+  private invalidate(): void {
+    let node: MantarayNode | null = this
+
+    while (node) {
+      node.selfAddress = null
+      node.type = null
+      node = node.parent
     }
   }
 
@@ -284,11 +300,42 @@ export class MantarayNode {
     }
 
     const [parent, matchedPath] = this.findClosest(path.slice(0, path.length - 1))
-    parent.forks.delete(path.slice(matchedPath.length)[0]!)
+    const forkKey = path.slice(matchedPath.length)[0]!
+    const heir = match.onlyChildFittingOneFork()
 
-    for (const fork of match.forks.values()) {
-      parent.addFork(Bytes.concat(match.path, fork.prefix), fork.node.targetAddress, fork.node.metadata)
+    if (heir) {
+      parent.forks.delete(forkKey)
+      parent.adopt(heir, Bytes.concat(match.path, heir.prefix))
+    } else if (match.forks.size === 0) {
+      parent.forks.delete(forkKey)
+    } else {
+      match.clearEntry()
     }
+
+    match.invalidate()
+    parent.invalidate()
+  }
+
+  private onlyChildFittingOneFork(): Fork | undefined {
+    if (this.forks.size !== 1) {
+      return undefined
+    }
+
+    const child = [...this.forks.values()][0]!
+
+    return Bytes.concat(this.path, child.prefix).length <= MAX_FORK_PREFIX_LENGTH ? child : undefined
+  }
+
+  private adopt(fork: Fork, prefix: Uint8Array): void {
+    fork.prefix = prefix
+    fork.node.path = prefix
+    fork.node.parent = this
+    this.forks.set(prefix[0]!, fork)
+  }
+
+  private clearEntry(): void {
+    this.targetAddress = new Uint8Array(this.targetAddress.length)
+    this.metadata = null
   }
 
   /**
@@ -319,6 +366,10 @@ export class MantarayNode {
     onChunk: (chunk: ChunkBuilder, key?: Uint8Array) => Promise<void>,
   ): Promise<{ reference: Uint8Array; rootChunk: ChunkBuilder; encryptionKey?: Uint8Array }> {
     for (const fork of this.forks.values()) {
+      if (fork.node.selfAddress) {
+        continue
+      }
+
       await fork.node.saveRecursively(onChunk)
     }
 
