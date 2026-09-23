@@ -74,6 +74,7 @@ export class ChunkSplitter {
   private onBatch: (batch: ChunkEntry[]) => Promise<ChunkEntry[]>
   private onIntermediateChunk?: ((chunk: ChunkBuilder, hasParity: boolean) => void) | undefined
   private hasParity: boolean[] = [false]
+  private promotedLeaf: boolean[] = [false]
   private pendingEntries: ChunkEntry[][] = []
 
   /**
@@ -150,10 +151,10 @@ export class ChunkSplitter {
 
     const originalSpan = this.chunks[level]!.span
 
-    if (level >= 1 && this.onIntermediateChunk) {
+    if (level >= 1 && this.onIntermediateChunk && !this.promotedLeaf[level]) {
       this.onIntermediateChunk(this.chunks[level]!, this.hasParity[level] ?? false)
-      this.hasParity[level] = false
     }
+    this.hasParity[level] = false
 
     if (this.encrypted) {
       const { address, key } = this.chunks[level]!.encryptedHash()
@@ -169,6 +170,7 @@ export class ChunkSplitter {
       })
     }
     this.chunks[level] = new ChunkBuilder()
+    this.promotedLeaf[level] = false
 
     if (this.pending[level]!.length >= this.maxShards) {
       await this.flushBatch(level)
@@ -193,6 +195,7 @@ export class ChunkSplitter {
       this.chunks.push(new ChunkBuilder())
       this.pending.push([])
       this.hasParity.push(false)
+      this.promotedLeaf.push(false)
     }
     const batch = this.pending[level]!
     this.pending[level] = []
@@ -218,7 +221,7 @@ export class ChunkSplitter {
 
     if (!this.chunks[level + 1]) {
       await this.sealParities(level)
-      if (level >= 1 && this.onIntermediateChunk) {
+      if (level >= 1 && this.onIntermediateChunk && !this.promotedLeaf[level]) {
         this.onIntermediateChunk(this.chunks[level]!, this.hasParity[level] ?? false)
       }
 
@@ -233,6 +236,9 @@ export class ChunkSplitter {
       // the promoted node's own children are still pending
       await this.sealParities(level)
       this.chunks[level + 1] = this.chunks[level]!
+      this.hasParity[level + 1] = this.hasParity[level] ?? false
+      this.hasParity[level] = false
+      this.promotedLeaf[level + 1] = level === 0 || (this.promotedLeaf[level] ?? false)
 
       return this.finalize(level + 1)
     }
