@@ -70,11 +70,11 @@ export class ChunkSplitter {
   private encrypted: boolean
   private maxShards: number
   private chunks: ChunkBuilder[]
-  private counters: number[] = [1]
   private pending: PendingEntry[][] = [[]]
   private onBatch: (batch: ChunkEntry[]) => Promise<ChunkEntry[]>
   private onIntermediateChunk?: ((chunk: ChunkBuilder, hasParity: boolean) => void) | undefined
   private hasParity: boolean[] = [false]
+  private promotedLeaf: boolean[] = [false]
   private pendingEntries: ChunkEntry[][] = []
 
   /**
@@ -145,17 +145,16 @@ export class ChunkSplitter {
   }
 
   private async elevate(level: number): Promise<void> {
-    this.counters[level] = (this.counters[level]! + 1) % (4096 / this.refSize)
     if (!this.pending[level]) this.pending[level] = []
 
     await this.sealParities(level)
 
     const originalSpan = this.chunks[level]!.span
 
-    if (level >= 1 && this.onIntermediateChunk) {
+    if (level >= 1 && this.onIntermediateChunk && !this.promotedLeaf[level]) {
       this.onIntermediateChunk(this.chunks[level]!, this.hasParity[level] ?? false)
-      this.hasParity[level] = false
     }
+    this.hasParity[level] = false
 
     if (this.encrypted) {
       const { address, key } = this.chunks[level]!.encryptedHash()
@@ -171,6 +170,7 @@ export class ChunkSplitter {
       })
     }
     this.chunks[level] = new ChunkBuilder()
+    this.promotedLeaf[level] = false
 
     if (this.pending[level]!.length >= this.maxShards) {
       await this.flushBatch(level)
@@ -193,9 +193,9 @@ export class ChunkSplitter {
   private async flushBatch(level: number): Promise<void> {
     if (!this.chunks[level + 1]) {
       this.chunks.push(new ChunkBuilder())
-      this.counters.push(1)
       this.pending.push([])
       this.hasParity.push(false)
+      this.promotedLeaf.push(false)
     }
     const batch = this.pending[level]!
     this.pending[level] = []
@@ -221,19 +221,24 @@ export class ChunkSplitter {
 
     if (!this.chunks[level + 1]) {
       await this.sealParities(level)
-      if (level >= 1 && this.onIntermediateChunk) {
+      if (level >= 1 && this.onIntermediateChunk && !this.promotedLeaf[level]) {
         this.onIntermediateChunk(this.chunks[level]!, this.hasParity[level] ?? false)
       }
 
       return this.chunks[level]!
     }
 
-    if (this.counters[level] === 1) {
+    // Only child: this chunk starts a fresh parent node, so wrapping it in one would add a pointless node.
+    const parent = this.chunks[level + 1]!.writer
+    if (parent.cursor === 0 || parent.max() < this.refSize) {
       await this.elevate(level + 1)
       await this.flushBatch(level + 1)
       // the promoted node's own children are still pending
       await this.sealParities(level)
       this.chunks[level + 1] = this.chunks[level]!
+      this.hasParity[level + 1] = this.hasParity[level] ?? false
+      this.hasParity[level] = false
+      this.promotedLeaf[level + 1] = level === 0 || (this.promotedLeaf[level] ?? false)
 
       return this.finalize(level + 1)
     }
