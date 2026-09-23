@@ -141,6 +141,9 @@ export class Fork {
       metadata = JSON.parse(DECODER.decode(reader.read(metadataLength)))
     }
 
-    return new Fork(prefix, new MantarayNode({ selfAddress, metadata, path: prefix, type }))
+    return new Fork(
+      prefix,
+      new MantarayNode({ selfAddress, metadata, path: prefix, type, encrypt: addressLength === 64 }),
+    )
   }
 }

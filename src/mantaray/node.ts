@@ -60,6 +60,7 @@ interface MantarayNodeOptions {
  */
 export class MantarayNode {
   public obfuscationKey: Uint8Array
+  private persisted = false
   public selfAddress: Uint8Array | null = null
   public targetAddress: Uint8Array = new Uint8Array(32)
   public metadata: Record<string, string> | undefined | null = null
@@ -188,7 +189,8 @@ export class MantarayNode {
     const refBytesSize = uint8ToNumber(reader.read(1))
 
     const targetAddress = reader.read(refBytesSize)
-    const node = new MantarayNode({ selfAddress, targetAddress, obfuscationKey })
+    const node = new MantarayNode({ selfAddress, targetAddress, obfuscationKey, encrypt: refBytesSize === 64 })
+    node.persisted = true
     const forkBitmap = reader.read(32)
 
     // Older Bee nodes could persist a node with refBytesSize=0 despite its
@@ -204,6 +206,7 @@ export class MantarayNode {
         const fork = Fork.unmarshal(reader, forkRefSize)
         node.forks.set(i, fork)
         fork.node.parent = node
+        fork.node.persisted = true
       }
     }
 
@@ -277,6 +280,7 @@ export class MantarayNode {
     while (node) {
       node.selfAddress = null
       node.type = null
+      node.persisted = false
       node = node.parent
     }
   }
@@ -329,6 +333,7 @@ export class MantarayNode {
   private adopt(fork: Fork, prefix: Uint8Array): void {
     fork.prefix = prefix
     fork.node.path = prefix
+    fork.node.type = null
     fork.node.parent = this
     this.forks.set(prefix[0]!, fork)
   }
@@ -366,7 +371,7 @@ export class MantarayNode {
     onChunk: (chunk: ChunkBuilder, key?: Uint8Array) => Promise<void>,
   ): Promise<{ reference: Uint8Array; rootChunk: ChunkBuilder; encryptionKey?: Uint8Array }> {
     for (const fork of this.forks.values()) {
-      if (fork.node.selfAddress) {
+      if (fork.node.persisted) {
         continue
       }
 
@@ -389,12 +394,14 @@ export class MantarayNode {
       const { address, key } = rootChunk.encryptedHash()
       await onChunk(rootChunk, key)
       this.selfAddress = Bytes.concat(address.toUint8Array(), key)
+      this.persisted = true
 
       return { reference: this.selfAddress, rootChunk, encryptionKey: key }
     }
 
     await onChunk(rootChunk)
     this.selfAddress = rootChunk.hash().toUint8Array()
+    this.persisted = true
 
     return { reference: this.selfAddress, rootChunk }
   }
