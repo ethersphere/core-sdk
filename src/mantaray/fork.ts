@@ -46,8 +46,7 @@ export class Fork {
 
     if (commonPart.length === a.prefix.length) {
       const remainingB = b.prefix.slice(commonPart.length)
-      b.node.path = b.prefix.slice(commonPart.length)
-      b.node.type = null
+      b.node.relocate(b.prefix.slice(commonPart.length))
       b.prefix = b.prefix.slice(commonPart.length)
       b.node.parent = a.node
       a.node.forks.set(remainingB[0]!, b)
@@ -57,8 +56,7 @@ export class Fork {
 
     if (commonPart.length === b.prefix.length) {
       const remainingA = a.prefix.slice(commonPart.length)
-      a.node.path = a.prefix.slice(commonPart.length)
-      a.node.type = null
+      a.node.relocate(a.prefix.slice(commonPart.length))
       a.prefix = a.prefix.slice(commonPart.length)
       a.node.parent = b.node
       b.node.forks.set(remainingA[0]!, a)
@@ -71,10 +69,8 @@ export class Fork {
     const newAFork = new Fork(a.prefix.slice(commonPart.length), a.node)
     const newBFork = new Fork(b.prefix.slice(commonPart.length), b.node)
 
-    a.node.path = a.prefix.slice(commonPart.length)
-    b.node.path = b.prefix.slice(commonPart.length)
-    a.node.type = null
-    b.node.type = null
+    a.node.relocate(a.prefix.slice(commonPart.length))
+    b.node.relocate(b.prefix.slice(commonPart.length))
     a.prefix = a.prefix.slice(commonPart.length)
     b.prefix = b.prefix.slice(commonPart.length)
 

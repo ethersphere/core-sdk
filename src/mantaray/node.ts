@@ -17,6 +17,10 @@ const PATH_SEPARATOR = new Uint8Array([47])
 const MAX_FORK_PREFIX_LENGTH = 30
 const VERSION_02_HASH = hexToUint8Array('5768b3b6a7db56d21d1abff40d41cebfc83448fed8d7e9b06ec0d3b073f28f7b')
 
+function hasPathSeparator(path: Uint8Array): boolean {
+  return indexOf(path, PATH_SEPARATOR) > 0
+}
+
 // Mantaray's per-node fork bitmap is always bit-indexed little-endian - the
 // only order either source implementation ever uses, so it's hardcoded here
 // rather than threaded through as a parameter.
@@ -61,6 +65,7 @@ interface MantarayNodeOptions {
 export class MantarayNode {
   public obfuscationKey: Uint8Array
   private persisted = false
+  private loaded = true
   public selfAddress: Uint8Array | null = null
   public targetAddress: Uint8Array = new Uint8Array(32)
   public metadata: Record<string, string> | undefined | null = null
@@ -212,6 +217,7 @@ export class MantarayNode {
         node.forks.set(i, fork)
         fork.node.parent = node
         fork.node.persisted = true
+        fork.node.loaded = false
       }
     }
 
@@ -282,8 +288,18 @@ export class MantarayNode {
     }
   }
 
+  relocate(path: Uint8Array): void {
+    this.path = path
+
+    if (this.loaded) {
+      this.type = null
+    } else if (this.type !== null) {
+      this.type = (this.type & ~TYPE_WITH_PATH_SEPARATOR) | (hasPathSeparator(path) ? TYPE_WITH_PATH_SEPARATOR : 0)
+    }
+  }
+
   private assertSubtreeLoaded(): void {
-    if (this.persisted && this.forks.size === 0 && ((this.type ?? 0) & TYPE_EDGE) === TYPE_EDGE) {
+    if (!this.loaded) {
       throw new Error(
         `MantarayNode: forks of "${this.fullPathString}" are not loaded - load the subtree before editing it`,
       )
@@ -350,8 +366,7 @@ export class MantarayNode {
 
   private adopt(fork: Fork, prefix: Uint8Array): void {
     fork.prefix = prefix
-    fork.node.path = prefix
-    fork.node.type = null
+    fork.node.relocate(prefix)
     fork.node.parent = this
     this.forks.set(prefix[0]!, fork)
   }
@@ -502,7 +517,7 @@ export class MantarayNode {
       type |= TYPE_EDGE
     }
 
-    if (indexOf(this.path, PATH_SEPARATOR) > 0) {
+    if (hasPathSeparator(this.path)) {
       type |= TYPE_WITH_PATH_SEPARATOR
     }
 

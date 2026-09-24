@@ -242,12 +242,42 @@ describe('editing a node whose forks were never loaded', () => {
     )
   })
 
-  it('still allows adding a fork under a loaded leaf', async () => {
+  it('refuses to add a fork under an unloaded leaf', async () => {
     const store = makeStore()
     const root = store.load(await savedRoot(store))
-    root.addFork('solo.txt.bak', reference(5))
+
+    expect(() => root.addFork('solo.txt.bak', reference(5))).toThrow(/not loaded/)
+  })
+
+  it('keeps the stored type of an unloaded node moved by a split', async () => {
+    const store = makeStore()
+    const { reference: saved } = await build([
+      ['dir/one', 1],
+      ['dir/two', 2],
+    ]).saveRecursively(store.onChunk)
+
+    const root = store.load(saved)
+    root.addFork('dir2', reference(3))
     const { reference: resaved } = await root.saveRecursively(store.onChunk)
 
-    expect(readEntries(store, resaved).get('solo.txt.bak')).toBe(hex(reference(5)))
+    const { reference: fresh } = await build([
+      ['dir/one', 1],
+      ['dir/two', 2],
+      ['dir2', 3],
+    ]).saveRecursively(store.onChunk)
+    const slashTypeOf = (saved: Uint8Array) => {
+      const dir = store.load(store.load(saved).forks.get('d'.charCodeAt(0))!.node.selfAddress!)
+
+      return dir.forks.get('/'.charCodeAt(0))!.node.type
+    }
+
+    expect(readEntries(store, resaved)).toEqual(
+      entriesOf([
+        ['dir/one', 1],
+        ['dir/two', 2],
+        ['dir2', 3],
+      ]),
+    )
+    expect(slashTypeOf(resaved)).toBe(slashTypeOf(fresh))
   })
 })
