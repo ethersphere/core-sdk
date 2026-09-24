@@ -158,3 +158,96 @@ describe('removeFork merging a single child into its parent', () => {
     expect(typeOf(resaved)).toBe(typeOf(fresh))
   })
 })
+
+describe('Fork.split after loading', () => {
+  const forkTypeAt = (store: Store, root: Uint8Array, first: string, second: string) => {
+    const parent = store.load(store.load(root).forks.get(first.charCodeAt(0))!.node.selfAddress!)
+
+    return parent.forks.get(second.charCodeAt(0))!.node.type
+  }
+
+  it('writes the same fork type as a tree built with both paths', async () => {
+    const store = makeStore()
+    const { reference: saved } = await build([['x/y', 1]]).saveRecursively(store.onChunk)
+
+    const loaded = loadFully(store, saved)
+    loaded.addFork('x/z', reference(2))
+    const { reference: resaved } = await loaded.saveRecursively(store.onChunk)
+
+    const { reference: fresh } = await build([
+      ['x/y', 1],
+      ['x/z', 2],
+    ]).saveRecursively(store.onChunk)
+
+    expect(forkTypeAt(store, resaved, 'x', 'y')).toBe(forkTypeAt(store, fresh, 'x', 'y'))
+  })
+})
+
+describe('editing a loaded encrypted manifest with a metadata-only node', () => {
+  it('keeps one reference width across the saved root', async () => {
+    const store = makeStore()
+    const root = new MantarayNode({ encrypt: true })
+    root.addFork('index.html', reference(1, 64))
+    root.addFork('/', reference(0, 64), { 'website-index-document': 'index.html' })
+    const { reference: saved } = await root.saveRecursively(store.onChunk)
+
+    const loaded = loadFully(store, saved)
+    loaded.addFork('/', reference(0, 64), { 'website-index-document': 'other.html' })
+    const { reference: resaved } = await loaded.saveRecursively(store.onChunk)
+
+    for (const fork of store.load(resaved).forks.values()) {
+      expect(fork.node.selfAddress!.length).toBe(64)
+    }
+  })
+})
+
+describe('editing a node whose forks were never loaded', () => {
+  async function savedRoot(store: Store): Promise<Uint8Array> {
+    const { reference: saved } = await build([
+      ['dir/a.txt', 1],
+      ['dir/b.txt', 2],
+      ['solo.txt', 3],
+    ]).saveRecursively(store.onChunk)
+
+    return saved
+  }
+
+  it('refuses to add a fork under it', async () => {
+    const store = makeStore()
+    const root = store.load(await savedRoot(store))
+
+    expect(() => root.addFork('dir/c.txt', reference(4))).toThrow(/not loaded/)
+  })
+
+  it('refuses to remove it', async () => {
+    const store = makeStore()
+    const root = store.load(await savedRoot(store))
+
+    expect(() => root.removeFork('dir/')).toThrow(/not loaded/)
+  })
+
+  it('still allows editing a loaded subtree', async () => {
+    const store = makeStore()
+    const root = loadFully(store, await savedRoot(store))
+    root.addFork('dir/c.txt', reference(4))
+    const { reference: resaved } = await root.saveRecursively(store.onChunk)
+
+    expect(readEntries(store, resaved)).toEqual(
+      entriesOf([
+        ['dir/a.txt', 1],
+        ['dir/b.txt', 2],
+        ['solo.txt', 3],
+        ['dir/c.txt', 4],
+      ]),
+    )
+  })
+
+  it('still allows adding a fork under a loaded leaf', async () => {
+    const store = makeStore()
+    const root = store.load(await savedRoot(store))
+    root.addFork('solo.txt.bak', reference(5))
+    const { reference: resaved } = await root.saveRecursively(store.onChunk)
+
+    expect(readEntries(store, resaved).get('solo.txt.bak')).toBe(hex(reference(5)))
+  })
+})

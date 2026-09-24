@@ -189,7 +189,12 @@ export class MantarayNode {
     const refBytesSize = uint8ToNumber(reader.read(1))
 
     const targetAddress = reader.read(refBytesSize)
-    const node = new MantarayNode({ selfAddress, targetAddress, obfuscationKey, encrypt: refBytesSize === 64 })
+    const node = new MantarayNode({
+      selfAddress,
+      targetAddress,
+      obfuscationKey,
+      encrypt: refBytesSize === 64 || selfAddress?.length === 64,
+    })
     node.persisted = true
     const forkBitmap = reader.read(32)
 
@@ -240,6 +245,7 @@ export class MantarayNode {
 
       if (!remainingPath.length) {
         if (isLast) {
+          tip.assertSubtreeLoaded()
           tip.targetAddress = new Reference(reference).toUint8Array()
           tip.metadata = metadata ?? null
           tip.invalidate()
@@ -258,6 +264,8 @@ export class MantarayNode {
         }),
       )
 
+      tip.assertSubtreeLoaded()
+
       const existing = bestMatch.forks.get(remainingPath[0]!)
 
       if (existing) {
@@ -271,6 +279,14 @@ export class MantarayNode {
 
       tip.invalidate()
       tip = newFork.node
+    }
+  }
+
+  private assertSubtreeLoaded(): void {
+    if (this.persisted && this.forks.size === 0 && ((this.type ?? 0) & TYPE_EDGE) === TYPE_EDGE) {
+      throw new Error(
+        `MantarayNode: forks of "${this.fullPathString}" are not loaded - load the subtree before editing it`,
+      )
     }
   }
 
@@ -302,6 +318,8 @@ export class MantarayNode {
     if (!match) {
       throw new Error('MantarayNode#removeFork fork not found')
     }
+
+    match.assertSubtreeLoaded()
 
     const [parent, matchedPath] = this.findClosest(path.slice(0, path.length - 1))
     const forkKey = path.slice(matchedPath.length)[0]!
