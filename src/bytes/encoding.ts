@@ -44,6 +44,9 @@ export function commonPrefix(one: Uint8Array, other: Uint8Array): Uint8Array {
  * contiguous subsequence of `bytes`, or -1 if it doesn't occur.
  */
 export function indexOf(bytes: Uint8Array, value: Uint8Array, start = 0): number {
+  if (value.length === 0) {
+    return Math.min(start, bytes.length)
+  }
   for (let i = start; i < bytes.length; i++) {
     for (let j = 0; j < value.length; j++) {
       if (bytes[i + j] !== value[j]) {
@@ -108,6 +111,9 @@ export function uint256ToNumber(bytes: Uint8Array, endian: 'LE' | 'BE'): bigint 
  */
 export function hexToUint8Array(hex: string): Uint8Array {
   const clean = hex.startsWith('0x') || hex.startsWith('0X') ? hex.slice(2) : hex
+  if (clean.length % 2 !== 0 || !/^[0-9a-fA-F]*$/.test(clean)) {
+    throw new Error(`hexToUint8Array: invalid hex string: ${hex}`)
+  }
   const result = new Uint8Array(clean.length / 2)
   for (let i = 0; i < result.length; i++) {
     result[i] = parseInt(clean.slice(i * 2, i * 2 + 2), 16)
@@ -143,7 +149,7 @@ function baseToUint8Array(baseString: string, baseChars: string): Uint8Array {
   return new Uint8Array(array)
 }
 
-function uint8ArrayToBase(bytes: Uint8Array, baseChars: string): string {
+function uint8ArrayToBase(bytes: Uint8Array, baseChars: string, paddingBlock: number): string {
   const base = baseChars.length
   let bits = 0
   let value = 0
@@ -159,8 +165,8 @@ function uint8ArrayToBase(bytes: Uint8Array, baseChars: string): string {
   if (bits > 0) {
     result += baseChars.charAt((value << (Math.log2(base) - bits)) & (base - 1))
   }
-  if (result.length % 4 !== 0) {
-    result += '='.repeat(4 - (result.length % 4))
+  if (result.length % paddingBlock !== 0) {
+    result += '='.repeat(paddingBlock - (result.length % paddingBlock))
   }
   return result
 }
@@ -176,7 +182,7 @@ export function base64ToUint8Array(base64: string): Uint8Array {
  * Encodes bytes as a padded base64 string.
  */
 export function uint8ArrayToBase64(bytes: Uint8Array): string {
-  return uint8ArrayToBase(bytes, BASE64_CHARS)
+  return uint8ArrayToBase(bytes, BASE64_CHARS, 4)
 }
 
 /**
@@ -190,7 +196,7 @@ export function base32ToUint8Array(base32: string): Uint8Array {
  * Encodes bytes as a padded base32 string.
  */
 export function uint8ArrayToBase32(bytes: Uint8Array): string {
-  return uint8ArrayToBase(bytes, BASE32_CHARS)
+  return uint8ArrayToBase(bytes, BASE32_CHARS, 8)
 }
 
 /**

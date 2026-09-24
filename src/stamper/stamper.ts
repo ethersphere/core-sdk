@@ -4,6 +4,8 @@ import { PrivateKey } from '../bytes/private-key.js'
 import { EnvelopeWithBatchId } from './marshal.js'
 import { Bytes } from '../bytes/bytes.js'
 
+const BUCKET_DEPTH = 16
+
 /**
  * Signs a single chunk address into a postage stamp envelope.
  *
@@ -48,11 +50,15 @@ export class Stamper {
   maxSlot: number
 
   private constructor(signer: PrivateKey, batchId: BatchId, buckets: Uint32Array, depth: number) {
+    if (!Number.isInteger(depth) || depth <= BUCKET_DEPTH) {
+      throw new Error(`Stamper#constructor depth must be an integer above ${BUCKET_DEPTH}, got ${depth}`)
+    }
+
     this.signer = signer
     this.batchId = batchId
     this.buckets = buckets
     this.depth = depth
-    this.maxSlot = 2 ** (depth - 16)
+    this.maxSlot = 2 ** (depth - BUCKET_DEPTH)
   }
 
   /**

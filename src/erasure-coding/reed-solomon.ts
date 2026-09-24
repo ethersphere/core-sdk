@@ -210,6 +210,7 @@ function getParityRows(dataShards: number, parityShards: number): number[][] {
  * the same scheme real Bee nodes use, so this interoperates with them.
  */
 export function rsEncode(data: Uint8Array[], parityCount: number): Uint8Array[] {
+  if (data.length === 0) throw new Error('rsEncode: expected at least one data shard')
   if (parityCount === 0) return []
   const dataCount = data.length
   const shardSize = data[0]!.length
