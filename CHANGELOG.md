@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.2.0](https://github.com/ethersphere/core-sdk/compare/core-sdk-v0.1.1...core-sdk-v0.2.0) (2026-09-25)
+
+
+### Features
+
+* make Bytes primitive inspectable ([6bb74ee](https://github.com/ethersphere/core-sdk/commit/6bb74ee0cc2c58fbb8c08c4e4760173285f1e32a))
+* make Bytes primitive inspectable ([4356bee](https://github.com/ethersphere/core-sdk/commit/4356beedb12a6c9ba9fc3651c60b421860f35c06))
+
+
+### Bug Fixes
+
+* address leftover open bugs ([#17](https://github.com/ethersphere/core-sdk/issues/17)) ([d977750](https://github.com/ethersphere/core-sdk/commit/d977750faecb133fb0d014a90a7df9608ef96f2b))
+* all zero obfuscation key for unencrypted mantaray nodes ([8fb8955](https://github.com/ethersphere/core-sdk/commit/8fb895568c55eead9ccc0ba54461b98998a413cf))
+* all zero obfuscation key for unencrypted mantaray nodes ([96bbcb9](https://github.com/ethersphere/core-sdk/commit/96bbcb9ae2a36665659c01ff6c587a93dca9f992))
+* chunk splitter lack of emit ([4c010bf](https://github.com/ethersphere/core-sdk/commit/4c010bf4725aa65c71b8536d87d9be0346b50655))
+* chunk splitter lack of emit ([6a90a25](https://github.com/ethersphere/core-sdk/commit/6a90a25bc36f4d95b9d621912ab02824047c9abc))
+* falsely reported leaf level ([74800ee](https://github.com/ethersphere/core-sdk/commit/74800ee610708afa100f56b177eb6825cc452cc5))
+* falsely reported leaf level ([0db3af9](https://github.com/ethersphere/core-sdk/commit/0db3af933c440b58cf218349176cb214db68d52a))
+* mantaray fork editing ([#16](https://github.com/ethersphere/core-sdk/issues/16)) ([857b153](https://github.com/ethersphere/core-sdk/commit/857b1531575a5d5bdd064cf218d16cd2ad250d3a))
+* simplify symbol format ([939a020](https://github.com/ethersphere/core-sdk/commit/939a020ef479cb4b5464865dca63dfad5142eae5))
+* use the right modulus when redundancy used ([fe377b8](https://github.com/ethersphere/core-sdk/commit/fe377b847bc5563f11605dea2634a3a118c1d453))
+* use the right modulus when redundancy used ([0c09d7f](https://github.com/ethersphere/core-sdk/commit/0c09d7fbc9d317461098be58d03174e62f0988b9))
+
 ## [0.1.1](https://github.com/ethersphere/core-sdk/compare/core-sdk-v0.1.0...core-sdk-v0.1.1) (2026-08-18)
 
 
