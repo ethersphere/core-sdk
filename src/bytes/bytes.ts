@@ -35,9 +35,9 @@ export class Bytes {
       }
       this.bytes = hexToUint8Array(bytes)
     } else if (bytes instanceof ArrayBuffer) {
-      this.bytes = new Uint8Array(bytes)
+      this.bytes = new Uint8Array(bytes.slice(0))
     } else if (bytes instanceof Uint8Array) {
-      this.bytes = bytes
+      this.bytes = bytes.slice()
     } else {
       const unknownInput = bytes as unknown
       if (hasToHexMethod(unknownInput)) {

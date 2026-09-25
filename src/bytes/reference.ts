@@ -39,6 +39,10 @@ export class Reference extends Bytes {
    * Encodes the reference as a `"bah5..."` CID string of the given type.
    */
   toCid(type: 'feed' | 'manifest'): string {
+    if (this.length !== Reference.LENGTH) {
+      throw new Error(`Reference#toCid: only 32-byte references can be encoded as a CID, got ${this.length} bytes`)
+    }
+
     const header = Bytes.concat(
       new Uint8Array([1]), // version
       new Uint8Array([type === 'feed' ? SWARM_FEED_CODEC : SWARM_MANIFEST_CODEC]),
