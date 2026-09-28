@@ -64,7 +64,7 @@ describe('Bytes', () => {
 
   it('parses JSON from its UTF-8 content', () => {
     const bytes = Bytes.fromUtf8(JSON.stringify({ a: 1 }))
-    expect(bytes.parseJson()).toEqual({ a: 1 })
+    expect(bytes.parsePayloadAsJson()).toEqual({ a: 1 })
   })
 
   it('stringifies to hex, standalone and as a property', () => {

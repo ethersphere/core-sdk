@@ -156,7 +156,7 @@ export class Bytes {
   /**
    * Parses the bytes as UTF-8 JSON.
    */
-  public parseJson(): unknown {
+  public parsePayloadAsJson(): unknown {
     return JSON.parse(this.toUtf8())
   }
 
