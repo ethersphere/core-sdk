@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/ethersphere/core-sdk/compare/core-sdk-v0.2.0...core-sdk-v0.2.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* rename misleading byte method ([#18](https://github.com/ethersphere/core-sdk/issues/18)) ([847b932](https://github.com/ethersphere/core-sdk/commit/847b9326a881bb72812180081715d5f4182b77ea))
+
 ## [0.2.0](https://github.com/ethersphere/core-sdk/compare/core-sdk-v0.1.1...core-sdk-v0.2.0) (2026-09-25)
 
 
