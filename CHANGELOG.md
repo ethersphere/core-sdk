@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/ethersphere/core-sdk/compare/core-sdk-v0.2.1...core-sdk-v0.2.2) (2026-10-13)
+
+
+### Bug Fixes
+
+* make possible to hydrate mantaray node ([#20](https://github.com/ethersphere/core-sdk/issues/20)) ([cdc531f](https://github.com/ethersphere/core-sdk/commit/cdc531f77723f1ee794373caababd6669cf9c0c8))
+
 ## [0.2.1](https://github.com/ethersphere/core-sdk/compare/core-sdk-v0.2.0...core-sdk-v0.2.1) (2026-09-28)
 
 
