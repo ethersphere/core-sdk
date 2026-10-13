@@ -173,6 +173,46 @@ export class MantarayNode {
   }
 
   /**
+   * Loads this node in place from its marshaled data, turning a fork stub into
+   * a fully loaded node whose subtree can be edited.
+   *
+   * `unmarshalFromData` only decodes a single node: its fork children are stubs
+   * carrying just `selfAddress`, path and metadata, and `addFork`/`removeFork`
+   * throw on them until they are loaded. Fetch each stub's chunk by its
+   * `selfAddress` and pass the payload here (without the 8-byte span), then
+   * recurse into its forks.
+   *
+   * Prefer this over unmarshaling a separate node and copying fields: the stub
+   * stays wired into its parent, keeps its fork path and metadata, and gets
+   * marked as loaded.
+   *
+   * @param data Marshaled node bytes, as returned by downloading `selfAddress`.
+   * @throws If `selfAddress` is not set, or `data` is not a valid node.
+   *
+   * @example
+   * const root = MantarayNode.unmarshalFromData(rootData, rootAddress)
+   * for (const fork of root.forks.values()) {
+   *   fork.node.hydrate(await download(fork.node.selfAddress!))
+   * }
+   */
+  hydrate(data: Uint8Array): void {
+    if (!this.selfAddress) {
+      throw new Error('MantarayNode#hydrate selfAddress is not set')
+    }
+
+    const source = MantarayNode.unmarshalFromData(data, this.selfAddress)
+    this.targetAddress = source.targetAddress
+    this.obfuscationKey = source.obfuscationKey
+    this.encrypt = source.encrypt
+    this.forks = source.forks
+
+    for (const fork of this.forks.values()) {
+      fork.node.parent = this
+    }
+    this.loaded = true
+  }
+
+  /**
    * Unmarshals a MantarayNode from previously marshaled data. Each fork's
    * child node only carries its own `selfAddress` - fetch and unmarshal it
    * (e.g. via `saveRecursively`'s chunk store) to descend further.
