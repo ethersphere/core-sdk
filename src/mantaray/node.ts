@@ -172,6 +172,24 @@ export class MantarayNode {
     return Bytes.concat(this.obfuscationKey, data)
   }
 
+  /** Fills a fork stub with its downloaded node data, making its forks editable. */
+  hydrate(data: Uint8Array): void {
+    if (!this.selfAddress) {
+      throw new Error('MantarayNode#hydrate selfAddress is not set')
+    }
+
+    const source = MantarayNode.unmarshalFromData(data, this.selfAddress)
+    this.targetAddress = source.targetAddress
+    this.obfuscationKey = source.obfuscationKey
+    this.encrypt = source.encrypt
+    this.forks = source.forks
+
+    for (const fork of this.forks.values()) {
+      fork.node.parent = this
+    }
+    this.loaded = true
+  }
+
   /**
    * Unmarshals a MantarayNode from previously marshaled data. Each fork's
    * child node only carries its own `selfAddress` - fetch and unmarshal it

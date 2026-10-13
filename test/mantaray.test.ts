@@ -194,9 +194,46 @@ describe('MantarayNode.calculateSelfAddress / saveRecursively', () => {
     }
   })
 
+  it('hydrate makes an unmarshaled subtree editable', async () => {
+    const store = new Map<string, Uint8Array>()
+    const onChunk = async (chunk: { hash(): { toHex(): string }; build(): Uint8Array }) => {
+      store.set(chunk.hash().toHex(), chunk.build().slice(8))
+    }
+    const hydrateAll = (node: MantarayNode) => {
+      for (const fork of node.forks.values()) {
+        fork.node.hydrate(store.get(uint8ArrayToHex(fork.node.selfAddress!))!)
+        hydrateAll(fork.node)
+      }
+    }
+
+    const original = new MantarayNode()
+    original.addFork('README.md', arbitraryReference(1))
+    original.addFork('utils/a.ts', arbitraryReference(2))
+    original.addFork('utils/b.ts', arbitraryReference(3))
+    const { reference } = await original.saveRecursively(onChunk)
+
+    const stub = MantarayNode.unmarshalFromData(store.get(uint8ArrayToHex(reference))!, reference)
+    expect(() => stub.removeFork('utils/')).toThrow(/not loaded/)
+
+    const root = MantarayNode.unmarshalFromData(store.get(uint8ArrayToHex(reference))!, reference)
+    hydrateAll(root)
+    expect(root.find('utils/a.ts')?.obfuscationKey).toEqual(original.find('utils/a.ts')?.obfuscationKey)
+
+    root.removeFork('utils/a.ts')
+    root.removeFork('README.md')
+    expect(Object.keys(root.collectAndMap())).toEqual(['utils/b.ts'])
+  })
+
+  it('hydrate requires a selfAddress', () => {
+    expect(() => new MantarayNode().hydrate(new Uint8Array(64))).toThrow(/selfAddress/)
+  })
+
   it('saveRecursively on an encrypted tree returns a 64-byte address||key reference', async () => {
     const store = new Map<string, Uint8Array>()
-    const onChunk = async (chunk: { encryptedHash(key?: Uint8Array): { address: { toHex(): string } } }, key?: Uint8Array) => {
+    const onChunk = async (
+      chunk: { encryptedHash(key?: Uint8Array): { address: { toHex(): string } } },
+      key?: Uint8Array,
+    ) => {
       if (key) {
         store.set(chunk.encryptedHash(key).address.toHex(), new Uint8Array(0))
       }
