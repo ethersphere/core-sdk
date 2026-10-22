@@ -36,6 +36,7 @@ console.log(chunk.address.toHex())
 | `@ethersphere/core-sdk/mantaray` | `MantarayNode` — the manifest trie used for directory/collection uploads |
 | `@ethersphere/core-sdk/erasure-coding` | Reed-Solomon parity, redundancy-level tables, and the batching logic used to add parity chunks to a stream |
 | `@ethersphere/core-sdk/encryption` | Chunk-level stream cipher and XOR helpers |
+| `@ethersphere/core-sdk/bps` | BPS-lite live pub/sub (SWIP-74/87): session topics and chunk ids, signed DATA/AUTH/ROSTER/EOS chunks, WebSocket frame codecs, roster payloads, and `BpsPosition` for resuming a subscription |
 | `@ethersphere/core-sdk/stamper` | Postage stamp signing (`Stamper`, `stamp()`) and effective-capacity math |
 
 Every subpath is also re-exported from the package root (`@ethersphere/core-sdk`), so `import { Bytes } from '@ethersphere/core-sdk'` works too.

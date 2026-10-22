@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import * as bpsModule from '../src/bps/index.js'
 import * as bytesModule from '../src/bytes/index.js'
 import * as chunkModule from '../src/chunk/index.js'
 import * as cryptoModule from '../src/crypto/index.js'
@@ -115,9 +116,31 @@ const STAMPER_EXPORTS = [
 
 const MANTARAY_EXPORTS = ['Fork', 'MantarayNode']
 
+const BPS_EXPORTS = [
+  'BPS_CHALLENGE_LENGTH',
+  'BPS_MAX_ROSTER_SIZE',
+  'BpsKind',
+  'BpsPosition',
+  'bpsIdentifier',
+  'bpsSessionTopic',
+  'decodeBpsDeliveryFrame',
+  'decodeBpsRoster',
+  'encodeBpsPublishFrame',
+  'encodeBpsRoster',
+  'makeBpsChunk',
+  'verifyBpsChunk',
+]
+
 // Exports that are data, not callables (e.g. a fixed address constant) -
 // exempted from the "every export is a function" check below.
-const NON_FUNCTION_EXPORTS = new Set(['REPLICAS_OWNER', 'MAX_PAYLOAD_SIZE', 'MIN_PAYLOAD_SIZE'])
+const NON_FUNCTION_EXPORTS = new Set([
+  'REPLICAS_OWNER',
+  'MAX_PAYLOAD_SIZE',
+  'MIN_PAYLOAD_SIZE',
+  'BPS_CHALLENGE_LENGTH',
+  'BPS_MAX_ROSTER_SIZE',
+  'BpsKind',
+])
 
 function assertExactExports(module: object, expectedNames: string[], label: string) {
   const actualNames = Object.keys(module).sort()
@@ -160,10 +183,15 @@ describe('public API contract', () => {
     assertExactExports(mantarayModule, MANTARAY_EXPORTS, 'mantaray')
   })
 
+  it('swarm-core-lib/bps exports exactly the expected functions', () => {
+    assertExactExports(bpsModule, BPS_EXPORTS, 'bps')
+  })
+
   it('swarm-core-lib (root) re-exports the union of every implemented subpath', () => {
     assertExactExports(
       rootModule,
       [
+        ...BPS_EXPORTS,
         ...BYTES_EXPORTS,
         ...CHUNK_EXPORTS,
         ...CRYPTO_EXPORTS,
