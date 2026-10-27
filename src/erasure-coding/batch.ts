@@ -1,4 +1,5 @@
 import { numberToUint64, uint64ToNumber } from '../bytes/encoding.js'
+import { Reference } from '../bytes/reference.js'
 import { ChunkBuilder, ChunkEntry } from '../chunk/splitter.js'
 import { encryptData, encryptSpan } from '../encryption/stream-cipher.js'
 import { getParities } from './levels.js'
@@ -38,11 +39,11 @@ export function makeIntermediateChunkHandler(level: number): (chunk: ChunkBuilde
 export function makeErasureBatch(
   level: number,
   encrypted: boolean,
-  onChunk: (chunk: ChunkBuilder, key?: Uint8Array) => Promise<void>,
+  onChunk: (chunk: ChunkBuilder, key?: Uint8Array, address?: Reference) => Promise<void>,
 ): (batch: ChunkEntry[]) => Promise<ChunkEntry[]> {
   return async (batch: ChunkEntry[]): Promise<ChunkEntry[]> => {
-    for (const { chunk, key } of batch) {
-      await onChunk(chunk, key)
+    for (const { chunk, key, address } of batch) {
+      await onChunk(chunk, key, address)
     }
     if (level <= 0) return []
 
@@ -57,8 +58,9 @@ export function makeErasureBatch(
       const parityEntries: ChunkEntry[] = []
       for (const bytes of parityShards) {
         const parityChunk = chunkFromBytes(bytes)
-        await onChunk(parityChunk)
-        parityEntries.push({ chunk: parityChunk })
+        const address = parityChunk.hash()
+        await onChunk(parityChunk, undefined, address)
+        parityEntries.push({ chunk: parityChunk, address })
       }
 
       return parityEntries
@@ -72,8 +74,9 @@ export function makeErasureBatch(
     const parityEntries: ChunkEntry[] = []
     for (const bytes of parityShards) {
       const chunk = chunkFromBytes(bytes)
-      await onChunk(chunk)
-      parityEntries.push({ chunk })
+      const address = chunk.hash()
+      await onChunk(chunk, undefined, address)
+      parityEntries.push({ chunk, address })
     }
 
     return parityEntries
