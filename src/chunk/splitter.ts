@@ -52,8 +52,8 @@ export class ChunkBuilder {
   }
 }
 
-/** A sealed chunk awaiting upload, with its encryption key if encrypted. */
-export type ChunkEntry = { chunk: ChunkBuilder; key?: Uint8Array }
+/** A sealed chunk awaiting upload, with its address and its encryption key if encrypted. */
+export type ChunkEntry = { chunk: ChunkBuilder; address?: Reference; key?: Uint8Array }
 
 type PendingEntry = { entry: ChunkEntry; ref: Uint8Array; span: bigint }
 
@@ -161,11 +161,12 @@ export class ChunkSplitter {
       const ref = new Uint8Array(64)
       ref.set(address.toUint8Array())
       ref.set(key, 32)
-      this.pending[level]!.push({ entry: { chunk: this.chunks[level]!, key }, ref, span: originalSpan })
+      this.pending[level]!.push({ entry: { chunk: this.chunks[level]!, address, key }, ref, span: originalSpan })
     } else {
+      const address = this.chunks[level]!.hash()
       this.pending[level]!.push({
-        entry: { chunk: this.chunks[level]! },
-        ref: this.chunks[level]!.hash().toUint8Array(),
+        entry: { chunk: this.chunks[level]!, address },
+        ref: address.toUint8Array(),
         span: originalSpan,
       })
     }
@@ -184,8 +185,8 @@ export class ChunkSplitter {
     const parities = await this.onBatch(entries)
     if (parities.length > 0) {
       this.hasParity[level] = true
-      for (const { chunk } of parities) {
-        this.chunks[level]!.writer.write(new Uint8ArrayReader(chunk.hash().toUint8Array()))
+      for (const { chunk, address } of parities) {
+        this.chunks[level]!.writer.write(new Uint8ArrayReader((address ?? chunk.hash()).toUint8Array()))
       }
     }
   }
