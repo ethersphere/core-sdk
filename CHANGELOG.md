@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/ethersphere/core-sdk/compare/core-sdk-v0.2.2...core-sdk-v0.3.0) (2026-10-27)
+
+
+### Features
+
+* add components for pubsub ([#22](https://github.com/ethersphere/core-sdk/issues/22)) ([db0ab1d](https://github.com/ethersphere/core-sdk/commit/db0ab1d7c913dfb46270cd585d2bc4f011f3d751))
+
+
+### Bug Fixes
+
+* expose chunk address in chunksplitter ([#24](https://github.com/ethersphere/core-sdk/issues/24)) ([babc2b9](https://github.com/ethersphere/core-sdk/commit/babc2b9e8cb33f30bca6aa9d5e38748bb8125b8e))
+
 ## [0.2.2](https://github.com/ethersphere/core-sdk/compare/core-sdk-v0.2.1...core-sdk-v0.2.2) (2026-10-13)
 
 
