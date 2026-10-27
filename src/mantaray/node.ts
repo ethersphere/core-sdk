@@ -441,7 +441,7 @@ export class MantarayNode {
    * callers can also create dispersed replicas from it.
    */
   async saveRecursively(
-    onChunk: (chunk: ChunkBuilder, key?: Uint8Array) => Promise<void>,
+    onChunk: (chunk: ChunkBuilder, key?: Uint8Array, address?: Reference) => Promise<void>,
   ): Promise<{ reference: Uint8Array; rootChunk: ChunkBuilder; encryptionKey?: Uint8Array }> {
     for (const fork of this.forks.values()) {
       if (fork.node.persisted) {
@@ -452,8 +452,8 @@ export class MantarayNode {
     }
 
     const onBatch = async (batch: ChunkEntry[]): Promise<ChunkEntry[]> => {
-      for (const { chunk, key } of batch) {
-        await onChunk(chunk, key)
+      for (const { chunk, key, address } of batch) {
+        await onChunk(chunk, key, address)
       }
 
       return []
@@ -465,15 +465,16 @@ export class MantarayNode {
 
     if (this.encrypt) {
       const { address, key } = rootChunk.encryptedHash()
-      await onChunk(rootChunk, key)
+      await onChunk(rootChunk, key, address)
       this.selfAddress = Bytes.concat(address.toUint8Array(), key)
       this.persisted = true
 
       return { reference: this.selfAddress, rootChunk, encryptionKey: key }
     }
 
-    await onChunk(rootChunk)
-    this.selfAddress = rootChunk.hash().toUint8Array()
+    const address = rootChunk.hash()
+    await onChunk(rootChunk, undefined, address)
+    this.selfAddress = address.toUint8Array()
     this.persisted = true
 
     return { reference: this.selfAddress, rootChunk }
