@@ -104,6 +104,16 @@
         "default": "./dist/stamper/index.cjs"
       }
     },
+    "./bps": {
+      "import": {
+        "types": "./dist/bps/index.d.ts",
+        "default": "./dist/bps/index.js"
+      },
+      "require": {
+        "types": "./dist/bps/index.d.cts",
+        "default": "./dist/bps/index.cjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "scripts": {

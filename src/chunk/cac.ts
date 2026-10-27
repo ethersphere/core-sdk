@@ -56,13 +56,18 @@ export function makeContentAddressedChunk(rawPayload: Bytes | Uint8Array | strin
       ? Span.fromBigInt(span)
       : span
     : Span.fromBigInt(BigInt(rawPayload.length))
-  const payload = new Bytes(rawPayload)
-  const data = Bytes.concat(typedSpan.toUint8Array(), payload.toUint8Array())
+
+  return makeChunkUnchecked(new Bytes(rawPayload), typedSpan)
+}
+
+// Skips the payload size check, e.g. for the empty chunks some protocols sign.
+export function makeChunkUnchecked(payload: Bytes, span: Span): Chunk {
+  const data = Bytes.concat(span.toUint8Array(), payload.toUint8Array())
   const address = calculateChunkAddress(data)
 
   const chunk: Chunk = {
     data,
-    span: typedSpan,
+    span,
     payload,
     address,
     toSingleOwnerChunk: (identifier, privateKey) =>
