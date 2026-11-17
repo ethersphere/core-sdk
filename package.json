@@ -128,10 +128,10 @@
     "format:check": "prettier --check \"src/**/*.ts\""
   },
   "dependencies": {
-    "@noble/curves": "^1.9.7",
-    "@noble/hashes": "^1.8.0"
+    "@noble/curves": "^1.9.7"
   },
   "devDependencies": {
+    "@noble/hashes": "^1.8.0",
     "esbuild": "^0.28.1",
     "prettier": "^3.9.5",
     "typescript": "^7.0.2",
