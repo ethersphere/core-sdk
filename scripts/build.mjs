@@ -19,7 +19,7 @@ const shared = {
     outdir: 'dist',
     target: 'es2022',
     sourcemap: true,
-    external: ['@noble/hashes', '@noble/hashes/*', '@noble/curves', '@noble/curves/*']
+    external: ['@noble/curves', '@noble/curves/*']
 }
 
 await build({ ...shared, format: 'esm', platform: 'neutral' })
