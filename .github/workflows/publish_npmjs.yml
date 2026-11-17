@@ -43,4 +43,4 @@ jobs:
       # this way successfully. pnpm still does install/build above; only the
       # publish call changes.
       - name: Publish
-        run: npm publish --provenance --access public
+        run: npm install -g npm@latest && npm stage publish --provenance --access public
