@@ -1,0 +1,19 @@
+{
+  "_env": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "ci": false
+  },
+  "DataSplitter.split 1MB payload": {
+    "mean": 69.5380959,
+    "hz": 14.380606587762493
+  },
+  "DataSplitter.split 1MB payload at redundancy level 2": {
+    "mean": 138.4099206999999,
+    "hz": 7.224915634244711
+  },
+  "DataSplitter.split 1MB encrypted payload": {
+    "mean": 328.14814570000016,
+    "hz": 3.0474040859405642
+  }
+}

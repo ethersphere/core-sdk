@@ -52,6 +52,10 @@ export class ChunkBuilder {
   }
 }
 
+export function unpaddedChunkData(chunk: ChunkBuilder): Uint8Array {
+  return Bytes.concat(numberToUint64(chunk.span, 'LE'), chunk.writer.buffer.subarray(0, chunk.writer.cursor))
+}
+
 /** A sealed chunk awaiting upload, with its address and its encryption key if encrypted. */
 export type ChunkEntry = { chunk: ChunkBuilder; address?: Reference; key?: Uint8Array }
 

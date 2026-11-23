@@ -11,6 +11,7 @@ import { Bytes } from '../bytes/bytes.js'
 function chunkFromBytes(bytes: Uint8Array): ChunkBuilder {
   const chunk = new ChunkBuilder(uint64ToNumber(bytes.subarray(0, 8), 'LE'))
   chunk.writer.buffer.set(bytes.subarray(8, 4104))
+  chunk.writer.cursor = chunk.writer.buffer.length
 
   return chunk
 }

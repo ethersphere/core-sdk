@@ -80,6 +80,7 @@ const CHUNK_EXPORTS = [
   'ChunkBuilder',
   'ChunkSplitter',
   'ChunkJoiner',
+  'DataSplitter',
   'makeSOCAddress',
   'makeSingleOwnerChunk',
   'unmarshalSingleOwnerChunk',

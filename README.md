@@ -32,7 +32,7 @@ console.log(chunk.address.toHex())
 |---|---|
 | `@ethersphere/core-sdk/bytes` | `Bytes` and typed wrappers (`Reference`, `BatchId`, `EthAddress`, `PrivateKey`, `PublicKey`, `Signature`, `Span`, `Topic`, `Identifier`, `FeedIndex`, `PeerAddress`, `TransactionId`) plus low-level encoding helpers (hex/base32/base64, concat, slice, integer packing) |
 | `@ethersphere/core-sdk/crypto` | Keccak-256, ECDSA sign/recover/verify, public/private key derivation |
-| `@ethersphere/core-sdk/chunk` | Content Addressed Chunks (CAC), Single Owner Chunks (SOC/SOC replicas), the BMT chunk hash, and `ChunkSplitter`/`ChunkJoiner` for building and reconstructing chunk trees |
+| `@ethersphere/core-sdk/chunk` | Content Addressed Chunks (CAC), Single Owner Chunks (SOC/SOC replicas), the BMT chunk hash, `DataSplitter` for splitting data into ready-to-upload chunks (with optional encryption, erasure coding and root replicas), and `ChunkSplitter`/`ChunkJoiner` for building and reconstructing chunk trees |
 | `@ethersphere/core-sdk/mantaray` | `MantarayNode` — the manifest trie used for directory/collection uploads |
 | `@ethersphere/core-sdk/erasure-coding` | Reed-Solomon parity, redundancy-level tables, and the batching logic used to add parity chunks to a stream |
 | `@ethersphere/core-sdk/encryption` | Chunk-level stream cipher and XOR helpers |
