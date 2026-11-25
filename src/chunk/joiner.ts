@@ -2,6 +2,11 @@ import { uint64ToNumber } from '../bytes/encoding.js'
 import { decryptChunk } from '../encryption/stream-cipher.js'
 import { decodeRedundancyLevel, referenceCount } from '../erasure-coding/span.js'
 import { Bytes } from '../bytes/bytes.js'
+import { verifyFetchedChunk } from './verify.js'
+
+export interface ChunkJoinerOptions {
+  verify?: boolean
+}
 
 /**
  * Reconstructs the original data behind a chunk tree (as produced by
@@ -10,6 +15,7 @@ import { Bytes } from '../bytes/bytes.js'
 export class ChunkJoiner {
   private refSize: number
   private encrypted: boolean
+  private verify: boolean
   private fetch: (address: Uint8Array) => Promise<Uint8Array>
   private onData: (data: Uint8Array) => Promise<void>
 
@@ -17,21 +23,32 @@ export class ChunkJoiner {
     fetch: (address: Uint8Array) => Promise<Uint8Array>,
     onData: (data: Uint8Array) => Promise<void>,
     encrypted = false,
+    verify = false,
   ) {
     this.fetch = fetch
     this.onData = onData
     this.encrypted = encrypted
+    this.verify = verify
     this.refSize = encrypted ? 64 : 32
   }
 
   /**
    * Fetches and reconstructs the full data behind an unencrypted chunk tree.
    */
-  static async collect(address: Uint8Array, fetch: (address: Uint8Array) => Promise<Uint8Array>): Promise<Uint8Array> {
+  static async collect(
+    address: Uint8Array,
+    fetch: (address: Uint8Array) => Promise<Uint8Array>,
+    options: ChunkJoinerOptions = {},
+  ): Promise<Uint8Array> {
     const parts: Uint8Array[] = []
-    await new ChunkJoiner(fetch, async data => {
-      parts.push(data)
-    }).join(address)
+    await new ChunkJoiner(
+      fetch,
+      async data => {
+        parts.push(data)
+      },
+      false,
+      options.verify,
+    ).join(address)
 
     return Bytes.concat(...parts)
   }
@@ -44,6 +61,7 @@ export class ChunkJoiner {
     address: Uint8Array,
     key: Uint8Array,
     fetch: (address: Uint8Array) => Promise<Uint8Array>,
+    options: ChunkJoinerOptions = {},
   ): Promise<Uint8Array> {
     const parts: Uint8Array[] = []
     await new ChunkJoiner(
@@ -52,6 +70,7 @@ export class ChunkJoiner {
         parts.push(data)
       },
       true,
+      options.verify,
     ).join(address, key)
 
     return Bytes.concat(...parts)
@@ -63,7 +82,8 @@ export class ChunkJoiner {
    * `onData` in order as they're reached.
    */
   async join(address: Uint8Array, key?: Uint8Array): Promise<void> {
-    const raw = await this.fetch(address)
+    const fetched = await this.fetch(address)
+    const raw = this.verify ? verifyFetchedChunk(address, fetched) : fetched
     let rawSpan: bigint
     let data: Uint8Array
     if (this.encrypted && key) {
