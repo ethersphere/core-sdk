@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
-import { ChunkBuilder, ChunkSplitter, type ChunkEntry } from '../../src/chunk/splitter.js'
+import { ChunkBuilder, ChunkTreeBuilder, type ChunkEntry } from '../../src/chunk/chunk-tree.js'
 import { fixture, FIXTURES } from '../fixtures/generate.js'
 
 // Regression: https://github.com/ethersphere/core-sdk/issues/7
@@ -9,7 +9,7 @@ async function split(name: keyof typeof FIXTURES, encrypted: boolean) {
   const emitted = new Set<ChunkBuilder>()
   const intermediate = new Set<ChunkBuilder>()
 
-  const splitter = new ChunkSplitter(
+  const splitter = new ChunkTreeBuilder(
     async (batch: ChunkEntry[]) => {
       for (const { chunk } of batch) {
         emitted.add(chunk)

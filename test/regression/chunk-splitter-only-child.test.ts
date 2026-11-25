@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { Bytes } from '../../src/bytes/bytes.js'
 import { numberToUint64, uint8ArrayToHex } from '../../src/bytes/encoding.js'
 import { ChunkJoiner } from '../../src/chunk/joiner.js'
-import { ChunkBuilder, ChunkSplitter } from '../../src/chunk/splitter.js'
+import { ChunkBuilder, ChunkTreeBuilder } from '../../src/chunk/chunk-tree.js'
 import { encryptData, encryptSpan } from '../../src/encryption/stream-cipher.js'
 import { makeErasureBatch, makeIntermediateChunkHandler } from '../../src/erasure-coding/batch.js'
 import { getMaxShards } from '../../src/erasure-coding/levels.js'
@@ -33,7 +33,7 @@ async function roundTrip(leaves: number, level: number, encrypted: boolean): Pro
     store.set(address.toHex(), serialize(chunk, key))
   }
 
-  const splitter = new ChunkSplitter(
+  const splitter = new ChunkTreeBuilder(
     makeErasureBatch(level, encrypted, put),
     getMaxShards(level, encrypted),
     encrypted,

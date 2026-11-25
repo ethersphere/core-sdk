@@ -1,7 +1,8 @@
 import { commonPrefix, equals, hexToUint8Array, indexOf, numberToUint8, uint8ToNumber } from '../bytes/encoding.js'
 import { Reference } from '../bytes/reference.js'
 import { Uint8ArrayReader } from '../chunk/byte-cursor.js'
-import { ChunkBuilder, ChunkEntry, ChunkSplitter } from '../chunk/splitter.js'
+import { ChunkBuilder, ChunkEntry, ChunkTreeBuilder } from '../chunk/chunk-tree.js'
+import { ChunkSplitter } from '../chunk/splitter.js'
 import { xorCypher } from '../encryption/xor-cipher.js'
 import { Fork } from './fork.js'
 import { Bytes } from '../bytes/bytes.js'
@@ -459,7 +460,7 @@ export class MantarayNode {
       return []
     }
 
-    const splitter = new ChunkSplitter(onBatch, undefined, this.encrypt)
+    const splitter = new ChunkTreeBuilder(onBatch, undefined, this.encrypt)
     await splitter.append(await this.marshal())
     const rootChunk = await splitter.finalize()
 

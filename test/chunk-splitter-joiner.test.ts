@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest'
 import {numberToUint64, uint8ArrayToHex} from '../src/bytes/encoding.js'
 import { makeContentAddressedChunk } from '../src/chunk/cac.js'
 import { ChunkJoiner } from '../src/chunk/joiner.js'
-import { ChunkBuilder, ChunkEntry, ChunkSplitter } from '../src/chunk/splitter.js'
+import { ChunkBuilder, ChunkEntry, ChunkTreeBuilder } from '../src/chunk/chunk-tree.js'
+import { ChunkSplitter } from '../src/chunk/splitter.js'
 import { encryptData, encryptSpan } from '../src/encryption/stream-cipher.js'
-import { getMaxShards, makeErasureBatch, makeIntermediateChunkHandler } from '../src/erasure-coding/index.js'
+import { makeErasureBatch, makeIntermediateChunkHandler } from '../src/erasure-coding/batch.js'
+import { getMaxShards } from '../src/erasure-coding/levels.js'
 import { Bytes } from '../src/bytes/bytes.js'
 
 // Captures every sealed chunk (leaf and intermediate) as onBatch sees them,
@@ -67,7 +69,7 @@ describe('ChunkSplitter + ChunkJoiner round-trip', () => {
     const storage = makeStorage()
     const data = Uint8Array.from({ length: 500 }, (_, i) => (i * 3) % 256)
 
-    const splitter = new ChunkSplitter(storage.onBatch)
+    const splitter = new ChunkTreeBuilder(storage.onBatch)
     await splitter.append(data)
     const root: ChunkBuilder = await splitter.finalize()
     storage.put(root.hash().toUint8Array(), root.build())
@@ -80,7 +82,7 @@ describe('ChunkSplitter + ChunkJoiner round-trip', () => {
     const storage = makeStorage()
     const data = Uint8Array.from({ length: 4096 * 5 + 777 }, (_, i) => (i * 7 + 3) % 256)
 
-    const splitter = new ChunkSplitter(storage.onBatch)
+    const splitter = new ChunkTreeBuilder(storage.onBatch)
     await splitter.append(data)
     const root = await splitter.finalize()
     storage.put(root.hash().toUint8Array(), root.build())
@@ -93,7 +95,7 @@ describe('ChunkSplitter + ChunkJoiner round-trip', () => {
     const storage = makeStorage()
     const data = Uint8Array.from({ length: 4096 * 3 + 123 }, (_, i) => (i * 5 + 1) % 256)
 
-    const splitter = new ChunkSplitter(storage.onBatch, undefined, true)
+    const splitter = new ChunkTreeBuilder(storage.onBatch, undefined, true)
     await splitter.append(data)
     const root = await splitter.finalize()
     const { address, key } = root.encryptedHash()
@@ -107,7 +109,7 @@ describe('ChunkSplitter + ChunkJoiner round-trip', () => {
 
   it('reconstructs an empty payload', async () => {
     const storage = makeStorage()
-    const splitter = new ChunkSplitter(storage.onBatch)
+    const splitter = new ChunkTreeBuilder(storage.onBatch)
     await splitter.append(new Uint8Array(0))
     const root = await splitter.finalize()
     storage.put(root.hash().toUint8Array(), root.build())
@@ -131,7 +133,7 @@ describe('ChunkSplitter + ChunkJoiner round-trip with erasure coding', () => {
     const maxShards = getMaxShards(level, false)
     const data = Uint8Array.from({ length: 4096 * (maxShards + 3) + 41 }, (_, i) => (i * 11 + level) % 256)
 
-    const splitter = new ChunkSplitter(
+    const splitter = new ChunkTreeBuilder(
       makeErasureBatch(level, false, onChunk),
       maxShards,
       false,
@@ -154,7 +156,7 @@ describe('ChunkSplitter + ChunkJoiner round-trip with erasure coding', () => {
     const maxShards = getMaxShards(level, true)
     const data = Uint8Array.from({ length: 4096 * (maxShards + 2) + 17 }, (_, i) => (i * 13) % 256)
 
-    const splitter = new ChunkSplitter(
+    const splitter = new ChunkTreeBuilder(
       makeErasureBatch(level, true, onChunk),
       maxShards,
       true,
@@ -179,7 +181,7 @@ describe('ChunkSplitter + ChunkJoiner round-trip with erasure coding', () => {
     }
     const data = Uint8Array.from({ length: 500 }, (_, i) => i)
 
-    const splitter = new ChunkSplitter(
+    const splitter = new ChunkTreeBuilder(
       makeErasureBatch(level, false, onChunk),
       getMaxShards(level, false),
       false,

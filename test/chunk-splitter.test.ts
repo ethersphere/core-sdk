@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { Bytes } from '../src/bytes/bytes.js'
 import { hexToUint8Array, uint8ArrayToHex } from '../src/bytes/encoding.js'
 import { calculateChunkAddress } from '../src/chunk/bmt.js'
-import { DataSplitter, SplitChunk } from '../src/chunk/data-splitter.js'
+import { ChunkSplitter, SplitChunk } from '../src/chunk/splitter.js'
 import { ChunkJoiner } from '../src/chunk/joiner.js'
 import { REPLICAS_OWNER, unmarshalSingleOwnerChunk } from '../src/chunk/soc.js'
 import { keccak256 } from '../src/crypto/keccak.js'
@@ -117,13 +117,13 @@ function isReplica(chunk: SplitChunk): boolean {
   return chunk.data.length > 105 && !calculateChunkAddress(chunk.data.subarray(0, 4104)).equals(chunk.address)
 }
 
-describe('DataSplitter', () => {
+describe('ChunkSplitter', () => {
   it.each(BEE_VECTORS)(
     'emits the same chunks as Bee for $size bytes at redundancy level $level',
     async ({ size, level, root, chunkCount, digest }) => {
       const store = makeStore()
 
-      const reference = await DataSplitter.split(payload(size), { redundancyLevel: level, onChunk: store.onChunk })
+      const reference = await ChunkSplitter.split(payload(size), { redundancyLevel: level, onChunk: store.onChunk })
 
       expect(reference.toHex()).toBe(root)
       expect(store.chunks.size).toBe(chunkCount)
@@ -135,7 +135,7 @@ describe('DataSplitter', () => {
     const store = makeStore()
     const data = payload(4096 * 150 + 77)
 
-    const reference = await DataSplitter.split(data, { redundancyLevel: level, onChunk: store.onChunk })
+    const reference = await ChunkSplitter.split(data, { redundancyLevel: level, onChunk: store.onChunk })
 
     expect(await ChunkJoiner.collect(reference.toUint8Array(), store.fetch)).toEqual(data)
   })
@@ -144,7 +144,7 @@ describe('DataSplitter', () => {
     const store = makeStore()
     const data = payload(4096 * 80 + 5)
 
-    const reference = await DataSplitter.split(data, {
+    const reference = await ChunkSplitter.split(data, {
       encrypted: true,
       redundancyLevel: level,
       onChunk: store.onChunk,
@@ -158,7 +158,7 @@ describe('DataSplitter', () => {
   it.each([false, true])('emits only chunks whose data matches their address (encrypted: %s)', async encrypted => {
     const store = makeStore()
 
-    await DataSplitter.split(payload(4096 * 40 + 9), { encrypted, redundancyLevel: 2, onChunk: store.onChunk })
+    await ChunkSplitter.split(payload(4096 * 40 + 9), { encrypted, redundancyLevel: 2, onChunk: store.onChunk })
 
     for (const chunk of store.emitted) {
       if (isReplica(chunk)) {
@@ -172,7 +172,7 @@ describe('DataSplitter', () => {
   it.each([0, 1, 2, 3, 4])('emits the root chunk and %i-level replicas of it', async level => {
     const store = makeStore()
 
-    const reference = await DataSplitter.split(payload(4096 * 3), { redundancyLevel: level, onChunk: store.onChunk })
+    const reference = await ChunkSplitter.split(payload(4096 * 3), { redundancyLevel: level, onChunk: store.onChunk })
     const replicas = store.emitted.filter(isReplica)
 
     expect(store.emitted.filter(chunk => chunk.address.equals(reference))).toHaveLength(1)
@@ -187,7 +187,7 @@ describe('DataSplitter', () => {
   it('emits encrypted root replicas wrapping the encrypted root chunk', async () => {
     const store = makeStore()
 
-    const reference = await DataSplitter.split(payload(500), {
+    const reference = await ChunkSplitter.split(payload(500), {
       encrypted: true,
       redundancyLevel: 3,
       onChunk: store.onChunk,
@@ -207,8 +207,8 @@ describe('DataSplitter', () => {
     const oneShot = makeStore()
     const streamed = makeStore()
 
-    const expected = await DataSplitter.split(data, { redundancyLevel: 2, onChunk: oneShot.onChunk })
-    const splitter = new DataSplitter({ redundancyLevel: 2, onChunk: streamed.onChunk })
+    const expected = await ChunkSplitter.split(data, { redundancyLevel: 2, onChunk: oneShot.onChunk })
+    const splitter = new ChunkSplitter({ redundancyLevel: 2, onChunk: streamed.onChunk })
     for (let offset = 0; offset < data.length; offset += 10_000) {
       await splitter.append(data.subarray(offset, offset + 10_000))
     }
@@ -221,7 +221,7 @@ describe('DataSplitter', () => {
   it('splits empty data into a single empty root chunk', async () => {
     const store = makeStore()
 
-    const reference = await DataSplitter.split(new Uint8Array(0), { onChunk: store.onChunk })
+    const reference = await ChunkSplitter.split(new Uint8Array(0), { onChunk: store.onChunk })
 
     expect(store.emitted).toHaveLength(1)
     expect(store.emitted[0]!.data).toEqual(new Uint8Array(8))
@@ -231,29 +231,55 @@ describe('DataSplitter', () => {
   it('defaults to no encryption and no redundancy', async () => {
     const store = makeStore()
 
-    const reference = await DataSplitter.split(payload(100), { onChunk: store.onChunk })
+    const reference = await ChunkSplitter.split(payload(100), { onChunk: store.onChunk })
 
     expect(reference.toHex()).toBe(BEE_VECTORS[0]!.root)
     expect(store.emitted).toHaveLength(1)
   })
 
+  it('computes the reference without an onChunk handler', async () => {
+    const splitter = new ChunkSplitter()
+    await splitter.append(payload(100))
+
+    expect((await splitter.finalize()).toHex()).toBe(BEE_VECTORS[0]!.root)
+  })
+
+  it('computes a redundant reference without an onChunk handler', async () => {
+    const vector = BEE_VECTORS.find(({ size, level }) => size > 100 && level === 3)!
+
+    expect((await ChunkSplitter.split(payload(vector.size), { redundancyLevel: 3 })).toHex()).toBe(vector.root)
+  })
+
+  it('returns the unencrypted root chunk from root()', async () => {
+    const root = await ChunkSplitter.root(payload(819323))
+
+    expect(root.hash().toHex()).toBe(BEE_VECTORS[5]!.root)
+  })
+
+  it('returns a 32-byte root address and key from encryptedRoot()', async () => {
+    const { address, key } = await ChunkSplitter.encryptedRoot(payload(500))
+
+    expect(address.length).toBe(32)
+    expect(key).toHaveLength(32)
+  })
+
   it.each([-1, 5, 1.5, Number.NaN])('rejects redundancy level %s', level => {
-    expect(() => new DataSplitter({ redundancyLevel: level, onChunk: async () => {} })).toThrow(
+    expect(() => new ChunkSplitter({ redundancyLevel: level, onChunk: async () => {} })).toThrow(
       new RangeError(`Redundancy level out of range: ${level}`),
     )
   })
 
   it('rejects appending after finalize', async () => {
-    const splitter = new DataSplitter({ onChunk: async () => {} })
+    const splitter = new ChunkSplitter({ onChunk: async () => {} })
     await splitter.finalize()
 
-    await expect(splitter.append(new Uint8Array(1))).rejects.toThrow('DataSplitter is already finalized')
+    await expect(splitter.append(new Uint8Array(1))).rejects.toThrow('ChunkSplitter is already finalized')
   })
 
   it('rejects finalizing twice', async () => {
-    const splitter = new DataSplitter({ onChunk: async () => {} })
+    const splitter = new ChunkSplitter({ onChunk: async () => {} })
     await splitter.finalize()
 
-    await expect(splitter.finalize()).rejects.toThrow('DataSplitter is already finalized')
+    await expect(splitter.finalize()).rejects.toThrow('ChunkSplitter is already finalized')
   })
 })

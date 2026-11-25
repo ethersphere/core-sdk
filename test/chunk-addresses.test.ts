@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Reference } from '../src/bytes/reference.js'
-import { ChunkBuilder, ChunkEntry, ChunkSplitter } from '../src/chunk/splitter.js'
+import { ChunkBuilder, ChunkEntry, ChunkTreeBuilder } from '../src/chunk/chunk-tree.js'
 import { makeErasureBatch, makeIntermediateChunkHandler } from '../src/erasure-coding/batch.js'
 import { getMaxShards } from '../src/erasure-coding/levels.js'
 import { MantarayNode } from '../src/mantaray/node.js'
@@ -16,7 +16,7 @@ async function splitWithErasure(data: Uint8Array, level: number, encrypted: bool
   const onChunk = async (chunk: ChunkBuilder, key?: Uint8Array, address?: Reference) => {
     seen.push({ chunk, key, address })
   }
-  const splitter = new ChunkSplitter(
+  const splitter = new ChunkTreeBuilder(
     makeErasureBatch(level, encrypted, onChunk),
     getMaxShards(level, encrypted),
     encrypted,
@@ -31,7 +31,7 @@ async function splitWithErasure(data: Uint8Array, level: number, encrypted: bool
 describe('chunk addresses passed to consumers', () => {
   it('ChunkSplitter attaches the correct address to every batch entry', async () => {
     const entries: ChunkEntry[] = []
-    const splitter = new ChunkSplitter(async batch => {
+    const splitter = new ChunkTreeBuilder(async batch => {
       entries.push(...batch)
 
       return []

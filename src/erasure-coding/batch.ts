@@ -1,6 +1,6 @@
 import { numberToUint64, uint64ToNumber } from '../bytes/encoding.js'
 import { Reference } from '../bytes/reference.js'
-import { ChunkBuilder, ChunkEntry } from '../chunk/splitter.js'
+import { ChunkBuilder, ChunkEntry } from '../chunk/chunk-tree.js'
 import { encryptData, encryptSpan } from '../encryption/stream-cipher.js'
 import { getParities } from './levels.js'
 import { rsEncode } from './reed-solomon.js'
