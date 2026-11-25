@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ChunkBuilder, ChunkTreeBuilder, type ChunkEntry } from '../../src/chunk/chunk-tree.js'
+import { ChunkBuilder, ChunkTreeBuilder, type ChunkEntry } from '../../src/chunk/builder.js'
 
 // Regression: https://github.com/ethersphere/core-sdk/issues/10
 const FILL = 0x33

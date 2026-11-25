@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Reference } from '../src/bytes/reference.js'
-import { ChunkBuilder, ChunkEntry, ChunkTreeBuilder } from '../src/chunk/chunk-tree.js'
+import { ChunkBuilder, ChunkEntry, ChunkTreeBuilder } from '../src/chunk/builder.js'
 import { makeErasureBatch, makeIntermediateChunkHandler } from '../src/erasure-coding/batch.js'
 import { getMaxShards } from '../src/erasure-coding/levels.js'
 import { MantarayNode } from '../src/mantaray/node.js'

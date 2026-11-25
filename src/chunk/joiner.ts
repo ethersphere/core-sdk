@@ -2,9 +2,6 @@ import { uint64ToNumber } from '../bytes/encoding.js'
 import { decryptChunk } from '../encryption/stream-cipher.js'
 import { decodeRedundancyLevel, referenceCount } from '../erasure-coding/span.js'
 import { Bytes } from '../bytes/bytes.js'
-import { Reference } from '../bytes/reference.js'
-
-const ENCRYPTED_REFERENCE_LENGTH = Reference.LENGTH * 2
 
 /**
  * Reconstructs the original data behind a chunk tree (as produced by
@@ -28,40 +25,9 @@ export class ChunkJoiner {
   }
 
   /**
-   * Fetches and reconstructs the full data behind a reference, decrypting it when the reference is 64 bytes.
-   */
-  static collect(reference: Reference | string, fetch: (address: Reference) => Promise<Uint8Array>): Promise<Uint8Array>
-  /**
    * Fetches and reconstructs the full data behind an unencrypted chunk tree.
    */
-  static collect(address: Uint8Array, fetch: (address: Uint8Array) => Promise<Uint8Array>): Promise<Uint8Array>
-  static async collect(
-    address: Reference | string | Uint8Array,
-    fetch: ((address: Reference) => Promise<Uint8Array>) | ((address: Uint8Array) => Promise<Uint8Array>),
-  ): Promise<Uint8Array> {
-    if (address instanceof Uint8Array) {
-      return ChunkJoiner.collectPlain(address, fetch as (address: Uint8Array) => Promise<Uint8Array>)
-    }
-
-    const reference = new Reference(address).toUint8Array()
-    const fetchByReference = (chunkAddress: Uint8Array) =>
-      (fetch as (address: Reference) => Promise<Uint8Array>)(new Reference(chunkAddress))
-
-    if (reference.length === ENCRYPTED_REFERENCE_LENGTH) {
-      return ChunkJoiner.collectEncrypted(
-        reference.subarray(0, Reference.LENGTH),
-        reference.subarray(Reference.LENGTH),
-        fetchByReference,
-      )
-    }
-
-    return ChunkJoiner.collectPlain(reference, fetchByReference)
-  }
-
-  private static async collectPlain(
-    address: Uint8Array,
-    fetch: (address: Uint8Array) => Promise<Uint8Array>,
-  ): Promise<Uint8Array> {
+  static async collect(address: Uint8Array, fetch: (address: Uint8Array) => Promise<Uint8Array>): Promise<Uint8Array> {
     const parts: Uint8Array[] = []
     await new ChunkJoiner(fetch, async data => {
       parts.push(data)

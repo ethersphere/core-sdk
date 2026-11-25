@@ -3,7 +3,7 @@ import { Bytes } from '../../src/bytes/bytes.js'
 import { numberToUint64, uint8ArrayToHex } from '../../src/bytes/encoding.js'
 import { calculateChunkAddress } from '../../src/chunk/bmt.js'
 import { ChunkJoiner } from '../../src/chunk/joiner.js'
-import { ChunkBuilder, ChunkEntry, ChunkTreeBuilder } from '../../src/chunk/chunk-tree.js'
+import { ChunkBuilder, ChunkEntry, ChunkTreeBuilder } from '../../src/chunk/builder.js'
 import { encryptData, encryptSpan } from '../../src/encryption/stream-cipher.js'
 
 const REF_SIZE = 64

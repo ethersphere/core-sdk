@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ChunkBuilder, ChunkTreeBuilder } from '../src/chunk/chunk-tree.js'
+import { ChunkBuilder, ChunkTreeBuilder } from '../src/chunk/builder.js'
 import { makeErasureBatch, makeIntermediateChunkHandler } from '../src/erasure-coding/batch.js'
 import { getParities } from '../src/erasure-coding/levels.js'
 

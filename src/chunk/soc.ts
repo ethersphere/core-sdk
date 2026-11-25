@@ -11,7 +11,7 @@ import { privateKeyToPublicKey, publicKeyToAddress } from '../crypto/keys.js'
 import { encryptData, encryptSpan } from '../encryption/stream-cipher.js'
 import { calculateChunkAddress } from './bmt.js'
 import type { Chunk } from './cac.js'
-import { ChunkBuilder } from './chunk-tree.js'
+import { ChunkBuilder } from './builder.js'
 
 /**
  * Ethereum address derived from the fixed replicas private key below -

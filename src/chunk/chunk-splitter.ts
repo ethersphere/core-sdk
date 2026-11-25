@@ -4,7 +4,7 @@ import { Reference } from '../bytes/reference.js'
 import { encryptData, encryptSpan } from '../encryption/stream-cipher.js'
 import { makeErasureBatch, makeIntermediateChunkHandler } from '../erasure-coding/batch.js'
 import { getMaxShards } from '../erasure-coding/levels.js'
-import { ChunkBuilder, ChunkTreeBuilder, unpaddedChunkData } from './chunk-tree.js'
+import { ChunkBuilder, ChunkTreeBuilder, unpaddedChunkData } from './builder.js'
 import { makeEncryptedReplicas, makeReplicas } from './soc.js'
 
 const MAX_REDUNDANCY_LEVEL = 4

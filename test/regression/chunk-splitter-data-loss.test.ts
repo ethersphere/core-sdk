@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
-import { ChunkBuilder, ChunkTreeBuilder, type ChunkEntry } from '../../src/chunk/chunk-tree.js'
+import { ChunkBuilder, ChunkTreeBuilder, type ChunkEntry } from '../../src/chunk/builder.js'
 import { fixture, FIXTURES } from '../fixtures/generate.js'
 
 // Regression: https://github.com/ethersphere/core-sdk/issues/7

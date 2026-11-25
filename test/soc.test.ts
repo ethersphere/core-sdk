@@ -9,8 +9,8 @@ import {
   REPLICAS_OWNER,
   unmarshalSingleOwnerChunk,
 } from '../src/chunk/soc.js'
-import { ChunkTreeBuilder } from '../src/chunk/chunk-tree.js'
-import { ChunkSplitter } from '../src/chunk/splitter.js'
+import { ChunkTreeBuilder } from '../src/chunk/builder.js'
+import { ChunkSplitter } from '../src/chunk/chunk-splitter.js'
 import { privateKeyToPublicKey, publicKeyToAddress } from '../src/crypto/keys.js'
 
 // A fixed non-zero test private key, distinct from the REPLICAS_PRIVATE_KEY

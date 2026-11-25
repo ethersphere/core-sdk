@@ -1,5 +1,5 @@
 import { bench } from 'vitest'
-import { ChunkSplitter } from '../src/chunk/splitter.js'
+import { ChunkSplitter } from '../src/chunk/chunk-splitter.js'
 
 // ~1MB - large enough to exercise multiple levels of the tree, not just a
 // single leaf chunk.
