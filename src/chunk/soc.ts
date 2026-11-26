@@ -71,7 +71,7 @@ function signSoc(identifier: Uint8Array, cacAddress: Uint8Array, privateKey: big
   return Bytes.concat(numberToUint256(r, 'BE'), numberToUint256(s, 'BE'), new Uint8Array([Number(v)]))
 }
 
-function recoverSocOwner(identifier: Uint8Array, cacAddress: Uint8Array, signature: Uint8Array): Uint8Array {
+export function recoverSocOwner(identifier: Uint8Array, cacAddress: Uint8Array, signature: Uint8Array): Uint8Array {
   const r = uint256ToNumber(signature.subarray(0, 32), 'BE')
   const s = uint256ToNumber(signature.subarray(32, 64), 'BE')
   const v = BigInt(signature[64]!) as 27n | 28n

@@ -1,0 +1,15 @@
+{
+  "_env": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "ci": false
+  },
+  "ChunkJoiner.collect 1MB payload": {
+    "mean": 0.5826406298020959,
+    "hz": 1716.323834710373
+  },
+  "ChunkJoiner.collect 1MB payload with verify": {
+    "mean": 69.6874499,
+    "hz": 14.349786101155638
+  }
+}
