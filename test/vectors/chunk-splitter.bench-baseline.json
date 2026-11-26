@@ -7,5 +7,17 @@
   "ChunkSplitter.root 1MB payload": {
     "mean": 66.41755009999996,
     "hz": 15.056261462435373
+  },
+  "ChunkSplitter.split 1MB payload": {
+    "mean": 68.48564590000008,
+    "hz": 14.601599895256282
+  },
+  "ChunkSplitter.split 1MB payload at redundancy level 2": {
+    "mean": 134.24127919999992,
+    "hz": 7.4492734720603035
+  },
+  "ChunkSplitter.split 1MB encrypted payload": {
+    "mean": 319.99085399999996,
+    "hz": 3.125089318959098
   }
 }

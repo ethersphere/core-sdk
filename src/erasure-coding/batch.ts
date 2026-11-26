@@ -1,6 +1,6 @@
 import { numberToUint64, uint64ToNumber } from '../bytes/encoding.js'
 import { Reference } from '../bytes/reference.js'
-import { ChunkBuilder, ChunkEntry } from '../chunk/splitter.js'
+import { ChunkBuilder, ChunkEntry } from '../chunk/builder.js'
 import { encryptData, encryptSpan } from '../encryption/stream-cipher.js'
 import { getParities } from './levels.js'
 import { rsEncode } from './reed-solomon.js'
@@ -11,6 +11,7 @@ import { Bytes } from '../bytes/bytes.js'
 function chunkFromBytes(bytes: Uint8Array): ChunkBuilder {
   const chunk = new ChunkBuilder(uint64ToNumber(bytes.subarray(0, 8), 'LE'))
   chunk.writer.buffer.set(bytes.subarray(8, 4104))
+  chunk.writer.cursor = chunk.writer.buffer.length
 
   return chunk
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ChunkBuilder, ChunkSplitter } from '../src/chunk/splitter.js'
+import { ChunkBuilder, ChunkTreeBuilder } from '../src/chunk/builder.js'
 import { makeErasureBatch, makeIntermediateChunkHandler } from '../src/erasure-coding/batch.js'
 import { getParities } from '../src/erasure-coding/levels.js'
 
@@ -11,7 +11,7 @@ describe('makeErasureBatch + makeIntermediateChunkHandler', () => {
     }
     const level = 1 // MEDIUM
 
-    const splitter = new ChunkSplitter(
+    const splitter = new ChunkTreeBuilder(
       makeErasureBatch(level, false, onChunk),
       undefined,
       false,
@@ -44,7 +44,7 @@ describe('makeErasureBatch + makeIntermediateChunkHandler', () => {
       uploaded.push(chunk)
     }
 
-    const splitter = new ChunkSplitter(makeErasureBatch(0, false, onChunk), undefined, false, makeIntermediateChunkHandler(0))
+    const splitter = new ChunkTreeBuilder(makeErasureBatch(0, false, onChunk), undefined, false, makeIntermediateChunkHandler(0))
     const payload = new Uint8Array(4096 * 2).fill(7)
     await splitter.append(payload)
     const root = await splitter.finalize()
@@ -61,7 +61,7 @@ describe('makeErasureBatch + makeIntermediateChunkHandler', () => {
     }
     const level = 1
 
-    const splitter = new ChunkSplitter(makeErasureBatch(level, true, onChunk), undefined, true)
+    const splitter = new ChunkTreeBuilder(makeErasureBatch(level, true, onChunk), undefined, true)
     const payload = new Uint8Array(4096 * 2).fill(9)
     await splitter.append(payload)
     await splitter.finalize()

@@ -1,7 +1,7 @@
 import { bench } from 'vitest'
 import { uint8ArrayToHex } from '../src/bytes/encoding.js'
 import { ChunkJoiner } from '../src/chunk/joiner.js'
-import { ChunkEntry, ChunkSplitter } from '../src/chunk/splitter.js'
+import { ChunkEntry, ChunkTreeBuilder } from '../src/chunk/builder.js'
 
 const store = new Map<string, Uint8Array>()
 
@@ -17,7 +17,7 @@ async function fetch(address: Uint8Array): Promise<Uint8Array> {
   return store.get(uint8ArrayToHex(address))!
 }
 
-const splitter = new ChunkSplitter(onBatch)
+const splitter = new ChunkTreeBuilder(onBatch)
 await splitter.append(Uint8Array.from({ length: 1024 * 1024 }, (_, i) => i % 251))
 const rootChunk = await splitter.finalize()
 const root = rootChunk.hash().toUint8Array()

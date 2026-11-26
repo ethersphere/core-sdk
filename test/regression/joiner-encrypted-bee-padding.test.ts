@@ -3,7 +3,7 @@ import { Bytes } from '../../src/bytes/bytes.js'
 import { numberToUint64, uint8ArrayToHex } from '../../src/bytes/encoding.js'
 import { calculateChunkAddress } from '../../src/chunk/bmt.js'
 import { ChunkJoiner } from '../../src/chunk/joiner.js'
-import { ChunkBuilder, ChunkEntry, ChunkSplitter } from '../../src/chunk/splitter.js'
+import { ChunkBuilder, ChunkEntry, ChunkTreeBuilder } from '../../src/chunk/builder.js'
 import { encryptData, encryptSpan } from '../../src/encryption/stream-cipher.js'
 
 const REF_SIZE = 64
@@ -40,7 +40,7 @@ function encryptLikeBee(chunk: ChunkBuilder, key: Uint8Array, plaintext: Uint8Ar
 
 async function beeStyleEncryptedTree(data: Uint8Array) {
   const storage = makeStorage()
-  const splitter = new ChunkSplitter(storage.onBatch, undefined, true)
+  const splitter = new ChunkTreeBuilder(storage.onBatch, undefined, true)
   await splitter.append(data)
   const root = await splitter.finalize()
 

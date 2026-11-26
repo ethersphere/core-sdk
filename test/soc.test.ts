@@ -9,7 +9,8 @@ import {
   REPLICAS_OWNER,
   unmarshalSingleOwnerChunk,
 } from '../src/chunk/soc.js'
-import { ChunkSplitter } from '../src/chunk/splitter.js'
+import { ChunkTreeBuilder } from '../src/chunk/builder.js'
+import { ChunkSplitter } from '../src/chunk/chunk-splitter.js'
 import { privateKeyToPublicKey, publicKeyToAddress } from '../src/crypto/keys.js'
 
 // A fixed non-zero test private key, distinct from the REPLICAS_PRIVATE_KEY
@@ -117,7 +118,7 @@ describe('makeEncryptedReplicas', () => {
 
   it('produces verifiable, owned replicas wrapping the encrypted body', async () => {
     const payload = Uint8Array.from({ length: 4096 * 2 + 42 }, (_, i) => (i * 5 + 1) % 256)
-    const splitter = new ChunkSplitter(ChunkSplitter.NOOP, undefined, true)
+    const splitter = new ChunkTreeBuilder(ChunkTreeBuilder.NOOP, undefined, true)
     await splitter.append(payload)
     const root = await splitter.finalize()
     const key = new Uint8Array(32).fill(6)

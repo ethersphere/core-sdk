@@ -32,9 +32,9 @@ console.log(chunk.address.toHex())
 |---|---|
 | `@ethersphere/core-sdk/bytes` | `Bytes` and typed wrappers (`Reference`, `BatchId`, `EthAddress`, `PrivateKey`, `PublicKey`, `Signature`, `Span`, `Topic`, `Identifier`, `FeedIndex`, `PeerAddress`, `TransactionId`) plus low-level encoding helpers (hex/base32/base64, concat, slice, integer packing) |
 | `@ethersphere/core-sdk/crypto` | Keccak-256, ECDSA sign/recover/verify, public/private key derivation |
-| `@ethersphere/core-sdk/chunk` | Content Addressed Chunks (CAC), Single Owner Chunks (SOC/SOC replicas), the BMT chunk hash, and `ChunkSplitter`/`ChunkJoiner` for building and reconstructing chunk trees |
+| `@ethersphere/core-sdk/chunk` | Content Addressed Chunks (CAC), Single Owner Chunks (SOC/SOC replicas), the BMT chunk hash, `ChunkSplitter` for splitting data into ready-to-upload chunks (with optional encryption, erasure coding and root replicas), and `ChunkJoiner` for reconstructing it |
 | `@ethersphere/core-sdk/mantaray` | `MantarayNode` — the manifest trie used for directory/collection uploads |
-| `@ethersphere/core-sdk/erasure-coding` | Reed-Solomon parity, redundancy-level tables, and the batching logic used to add parity chunks to a stream |
+| `@ethersphere/core-sdk/erasure-coding` | Reed-Solomon parity, redundancy-level tables and span encoding of the redundancy level |
 | `@ethersphere/core-sdk/encryption` | Chunk-level stream cipher and XOR helpers |
 | `@ethersphere/core-sdk/bps` | BPS-lite live pub/sub (SWIP-74/87): session topics and chunk ids, signed DATA/AUTH/ROSTER/EOS chunks, WebSocket frame codecs, roster payloads, and `BpsPosition` for resuming a subscription |
 | `@ethersphere/core-sdk/stamper` | Postage stamp signing (`Stamper`, `stamp()`) and effective-capacity math |
