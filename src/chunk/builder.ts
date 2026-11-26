@@ -5,9 +5,6 @@ import { calculateChunkAddress } from './bmt.js'
 import { Uint8ArrayReader, Uint8ArrayWriter } from './byte-cursor.js'
 import { Bytes } from '../bytes/bytes.js'
 
-// Named ChunkBuilder (not Chunk) to avoid colliding with the immutable CAC
-// `Chunk` shape in chunk/cac.ts - this is a different, mutable thing: a
-// 4096-byte buffer being filled in over time, before it's ever hashed.
 /**
  * A chunk (up to 4096 bytes of payload) being filled in by a ChunkSplitter,
  * before it's sealed. Unlike the immutable CAC {@link Chunk}, this is a
@@ -52,18 +49,19 @@ export class ChunkBuilder {
   }
 }
 
+export function unpaddedChunkData(chunk: ChunkBuilder): Uint8Array {
+  return Bytes.concat(numberToUint64(chunk.span, 'LE'), chunk.writer.buffer.subarray(0, chunk.writer.cursor))
+}
+
 /** A sealed chunk awaiting upload, with its address and its encryption key if encrypted. */
 export type ChunkEntry = { chunk: ChunkBuilder; address?: Reference; key?: Uint8Array }
 
 type PendingEntry = { entry: ChunkEntry; ref: Uint8Array; span: bigint }
 
 /**
- * Splits arbitrary data into a tree of 4096-byte chunks (the inverse of
- * ChunkJoiner), calling `onBatch` with each level's sealed chunks as they
- * fill up - e.g. to upload them, or (via erasure-coding/batch.ts) to add
- * Reed-Solomon parity chunks.
+ * Low-level chunk tree engine behind ChunkSplitter, calling `onBatch` with each level's sealed chunks.
  */
-export class ChunkSplitter {
+export class ChunkTreeBuilder {
   static readonly NOOP = async (_: ChunkEntry[]) => [] as ChunkEntry[]
 
   private refSize: number
@@ -99,29 +97,6 @@ export class ChunkSplitter {
     this.chunks = [new ChunkBuilder()]
     this.onBatch = onBatch
     this.onIntermediateChunk = onIntermediateChunk
-  }
-
-  /**
-   * Splits `data` into a chunk tree (no redundancy, no encryption, no
-   * upload callback) and returns just its root chunk.
-   */
-  static async root(data: Uint8Array): Promise<ChunkBuilder> {
-    const tree = new ChunkSplitter(ChunkSplitter.NOOP)
-    await tree.append(data)
-
-    return tree.finalize()
-  }
-
-  /**
-   * Splits `data` into an encrypted chunk tree (no upload callback) and
-   * returns the root's encrypted address and key.
-   */
-  static async encryptedRoot(data: Uint8Array): Promise<{ address: Reference; key: Uint8Array }> {
-    const tree = new ChunkSplitter(ChunkSplitter.NOOP, undefined, true)
-    await tree.append(data)
-    const root = await tree.finalize()
-
-    return root.encryptedHash()
   }
 
   /**

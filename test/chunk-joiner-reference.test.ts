@@ -3,7 +3,7 @@ import { Bytes } from '../src/bytes/bytes.js'
 import { numberToUint64 } from '../src/bytes/encoding.js'
 import { Reference } from '../src/bytes/reference.js'
 import { ChunkJoiner } from '../src/chunk/joiner.js'
-import { ChunkBuilder, ChunkSplitter } from '../src/chunk/splitter.js'
+import { ChunkBuilder, ChunkTreeBuilder } from '../src/chunk/builder.js'
 import { encryptData, encryptSpan } from '../src/encryption/stream-cipher.js'
 import { makeErasureBatch, makeIntermediateChunkHandler } from '../src/erasure-coding/batch.js'
 import { getMaxShards } from '../src/erasure-coding/levels.js'
@@ -27,7 +27,7 @@ function makeStore() {
   }
 
   async function split(data: Uint8Array, { encrypted = false, level = 0 } = {}): Promise<Reference> {
-    const splitter = new ChunkSplitter(
+    const splitter = new ChunkTreeBuilder(
       makeErasureBatch(level, encrypted, put),
       getMaxShards(level, encrypted),
       encrypted,
