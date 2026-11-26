@@ -55,7 +55,7 @@ function makeStore() {
     return data
   }
 
-  return { requested, split, fetch }
+  return { chunks, requested, split, fetch }
 }
 
 describe('ChunkJoiner.collect with a Reference', () => {
@@ -122,6 +122,26 @@ describe('ChunkJoiner.collect with a Reference', () => {
 
     expect(collected).toEqual(data)
     expect(requested.every(address => address instanceof Uint8Array)).toBe(true)
+  })
+
+  it.each([false, true])('verifies chunks fetched through a Reference (encrypted: %s)', async encrypted => {
+    const store = makeStore()
+    const reference = await store.split(data, { encrypted })
+
+    expect(await ChunkJoiner.collect(reference, store.fetch, { verify: true })).toEqual(data)
+  })
+
+  it.each([false, true])('rejects a tampered chunk fetched through a Reference (encrypted: %s)', async encrypted => {
+    const store = makeStore()
+    const reference = await store.split(data, { encrypted })
+    const [address, chunk] = [...store.chunks].find(([hex]) => hex !== reference.toHex().slice(0, 64))!
+    const tampered = chunk.slice()
+    tampered[tampered.length - 1]! ^= 1
+    store.chunks.set(address, tampered)
+
+    await expect(ChunkJoiner.collect(reference, store.fetch, { verify: true })).rejects.toThrow(
+      `Chunk integrity check failed: ${address}`,
+    )
   })
 
   it('rejects a string that is not a valid reference', async () => {
