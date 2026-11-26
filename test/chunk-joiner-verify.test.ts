@@ -4,9 +4,11 @@ import { hexToUint8Array, numberToUint64, uint8ArrayToHex } from '../src/bytes/e
 import { makeContentAddressedChunk } from '../src/chunk/cac.js'
 import { ChunkJoiner } from '../src/chunk/joiner.js'
 import { makeEncryptedReplicas, makeReplicas, makeSingleOwnerChunk } from '../src/chunk/soc.js'
-import { ChunkBuilder, ChunkEntry, ChunkSplitter } from '../src/chunk/splitter.js'
+import { ChunkBuilder, ChunkEntry, ChunkTreeBuilder } from '../src/chunk/builder.js'
+import { ChunkSplitter } from '../src/chunk/chunk-splitter.js'
 import { encryptData, encryptSpan } from '../src/encryption/stream-cipher.js'
-import { getMaxShards, makeErasureBatch, makeIntermediateChunkHandler } from '../src/erasure-coding/index.js'
+import { makeErasureBatch, makeIntermediateChunkHandler } from '../src/erasure-coding/batch.js'
+import { getMaxShards } from '../src/erasure-coding/levels.js'
 
 const REPLICAS_PRIVATE_KEY = 1n << 248n
 const OTHER_PRIVATE_KEY = 0x1234567890abcdefn
@@ -72,7 +74,7 @@ const multiChunkData = Uint8Array.from({ length: 4096 * 3 + 321 }, (_, i) => (i 
 
 async function storeTree(data: Uint8Array) {
   const storage = makeStorage()
-  const splitter = new ChunkSplitter(storage.onBatch)
+  const splitter = new ChunkTreeBuilder(storage.onBatch)
   await splitter.append(data)
   const rootChunk = await splitter.finalize()
   const root = storage.putChunk(rootChunk)
@@ -82,7 +84,7 @@ async function storeTree(data: Uint8Array) {
 
 async function storeEncryptedTree(data: Uint8Array) {
   const storage = makeStorage()
-  const splitter = new ChunkSplitter(storage.onBatch, undefined, true)
+  const splitter = new ChunkTreeBuilder(storage.onBatch, undefined, true)
   await splitter.append(data)
   const rootChunk = await splitter.finalize()
   const key = new Uint8Array(32).fill(7)
@@ -116,7 +118,7 @@ describe('ChunkJoiner with verify enabled', () => {
     }
     const maxShards = getMaxShards(level, false)
     const data = Uint8Array.from({ length: 4096 * (maxShards + 2) + 9 }, (_, i) => (i * 11) % 256)
-    const splitter = new ChunkSplitter(
+    const splitter = new ChunkTreeBuilder(
       makeErasureBatch(level, false, onChunk),
       maxShards,
       false,
