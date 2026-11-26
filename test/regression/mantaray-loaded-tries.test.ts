@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { uint64ToNumber, uint8ArrayToHex } from '../../src/bytes/encoding.js'
-import { ChunkBuilder } from '../../src/chunk/splitter.js'
+import { ChunkBuilder } from '../../src/chunk/builder.js'
 import { MantarayNode } from '../../src/mantaray/node.js'
 
 const reference = (value: number, length = 32) => new Uint8Array(length).fill(value)

@@ -7,5 +7,4 @@ export {
   getRedundancyStats,
 } from './levels.js'
 export type { RedundancyStat } from './levels.js'
-export { makeErasureBatch, makeIntermediateChunkHandler } from './batch.js'
 export { decodeRedundancyLevel, encodeRedundancyLevel, referenceCount } from './span.js'

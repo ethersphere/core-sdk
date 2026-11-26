@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ChunkBuilder, ChunkSplitter, type ChunkEntry } from '../../src/chunk/splitter.js'
+import { ChunkBuilder, ChunkTreeBuilder, type ChunkEntry } from '../../src/chunk/builder.js'
 
 // Regression: https://github.com/ethersphere/core-sdk/issues/10
 const FILL = 0x33
@@ -31,7 +31,7 @@ async function split(leaves: number, options: { maxShards?: number; encrypted?: 
     })
   }
 
-  const splitter = new ChunkSplitter(onBatch, maxShards, encrypted, (chunk, hasParity) => {
+  const splitter = new ChunkTreeBuilder(onBatch, maxShards, encrypted, (chunk, hasParity) => {
     reports.push({ chunk, hasParity })
   })
   await splitter.append(new Uint8Array(leaves * 4096).fill(FILL))

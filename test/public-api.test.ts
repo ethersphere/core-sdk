@@ -92,8 +92,6 @@ const ERASURE_CODING_EXPORTS = [
   'rsDecode',
   'getMaxShards',
   'getParities',
-  'makeErasureBatch',
-  'makeIntermediateChunkHandler',
   'approximateOverheadForRedundancyLevel',
   'getRedundancyStat',
   'getRedundancyStats',
