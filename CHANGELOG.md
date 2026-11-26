@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.0](https://github.com/ethersphere/core-sdk/compare/core-sdk-v0.3.0...core-sdk-v1.0.0) (2026-11-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* give ChunkSplitter an options constructor that emits every chunk ([#35](https://github.com/ethersphere/core-sdk/issues/35))
+
+### Features
+
+* accept a reference in ChunkJoiner.collect ([#36](https://github.com/ethersphere/core-sdk/issues/36)) ([b1d9245](https://github.com/ethersphere/core-sdk/commit/b1d9245f5e07c29ceabf35d3d0c12ecc7cf191b7))
+* chunk jointer integrity check mode ([#34](https://github.com/ethersphere/core-sdk/issues/34)) ([55aa145](https://github.com/ethersphere/core-sdk/commit/55aa145159181171b8e6bc1b9d4608172678fc82))
+* give ChunkSplitter an options constructor that emits every chunk ([#35](https://github.com/ethersphere/core-sdk/issues/35)) ([9f4846d](https://github.com/ethersphere/core-sdk/commit/9f4846dfd25d8910f7efc571bb9d7ca9873d6e49))
+
 ## [0.3.0](https://github.com/ethersphere/core-sdk/compare/core-sdk-v0.2.2...core-sdk-v0.3.0) (2026-10-27)
 
 
