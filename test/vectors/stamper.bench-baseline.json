@@ -1,0 +1,15 @@
+{
+  "_env": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "ci": false
+  },
+  "stamp() one chunk address": {
+    "mean": 0.25517456326530635,
+    "hz": 3918.8859077630505
+  },
+  "Stamper#stamp one chunk address": {
+    "mean": 0.2578768545642052,
+    "hz": 3877.8199062879594
+  }
+}

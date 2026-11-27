@@ -58,7 +58,7 @@ Before finishing, `pnpm test`, `pnpm typecheck` and `pnpm format:check` must pas
 - Prettier: no semicolons, single quotes, trailing commas, 2-space indent, 120 columns, `arrowParens: avoid`.
 - TypeScript is strict, including `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes` and no unused locals or parameters. Don't weaken `tsconfig.json`.
 - ESM with `NodeNext` resolution: relative imports end in `.js` (`import { Bytes } from '../bytes/bytes.js'`).
-- Functions are pure and deterministic. No global state, no I/O, and no timers.
+- Functions are pure and deterministic. No global state, no I/O, and no timers. The only exception is a small, bounded memo cache that callers can't observe, such as the stamp issuer cache.
 - Accept flexible input (`Bytes | Uint8Array | string`) and normalise it right away with the typed constructors (`new EthAddress(x)`, `new Topic(x)`). Return typed wrappers, not raw arrays.
 - Validate lengths and ranges at the boundary and throw `Error` (or `RangeError`) with a message naming the value, e.g. `` `BPS index out of range: ${index}` ``.
 - Use `bigint` for 64-bit values such as indexes and spans.
