@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/ethersphere/core-sdk/compare/core-sdk-v1.0.0...core-sdk-v1.0.1) (2026-11-27)
+
+
+### Performance Improvements
+
+* improve stamp() performance ([#45](https://github.com/ethersphere/core-sdk/issues/45)) ([d7f3c56](https://github.com/ethersphere/core-sdk/commit/d7f3c56092ed1c5705f6a932b69aaa2855dfb81d))
+
 ## [1.0.0](https://github.com/ethersphere/core-sdk/compare/core-sdk-v0.3.0...core-sdk-v1.0.0) (2026-11-26)
 
 
