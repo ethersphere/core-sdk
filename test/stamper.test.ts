@@ -183,6 +183,25 @@ describe('stamp', () => {
 
     expect(envelope.signature).toEqual(viaInstance.signature)
   })
+
+  it('returns the same issuer for repeated stamps by one signer', () => {
+    const first = stamp(privateKey, batchId, address, 0)
+    const second = stamp(privateKey, batchId, address, 1)
+
+    expect(second.issuer.equals(first.issuer)).toBe(true)
+  })
+
+  it('returns the right issuer for each signer when more signers are used than the cache holds', () => {
+    const signers = Array.from({ length: 40 }, (_, i) => new PrivateKey(numberToUint256(BigInt(i + 1), 'BE')))
+
+    for (const round of [0, 1]) {
+      for (const signer of signers) {
+        const envelope = stamp(signer, batchId, address, round)
+
+        expect(envelope.issuer.equals(signer.publicKey().address())).toBe(true)
+      }
+    }
+  })
 })
 
 describe('Stamper', () => {

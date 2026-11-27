@@ -1,10 +1,34 @@
 import { BatchId } from '../bytes/batch-id.js'
-import { numberToUint32, numberToUint64, uint16ToNumber } from '../bytes/encoding.js'
+import { numberToUint32, numberToUint64, uint16ToNumber, uint8ArrayToHex } from '../bytes/encoding.js'
+import { EthAddress } from '../bytes/eth-address.js'
+import { keccak256 } from '../crypto/keccak.js'
 import { PrivateKey } from '../bytes/private-key.js'
 import { EnvelopeWithBatchId } from './marshal.js'
 import { Bytes } from '../bytes/bytes.js'
 
 const BUCKET_DEPTH = 16
+const ISSUER_CACHE_SIZE = 16
+
+// Keyed by the hash of the private key, so the cache never holds key material.
+const issuerCache = new Map<string, EthAddress>()
+
+function issuerOf(privateKey: PrivateKey): EthAddress {
+  const cacheKey = uint8ArrayToHex(keccak256(privateKey.toUint8Array()))
+  let issuer = issuerCache.get(cacheKey)
+
+  if (issuer) {
+    issuerCache.delete(cacheKey)
+  } else {
+    issuer = privateKey.publicKey().address()
+  }
+  issuerCache.set(cacheKey, issuer)
+
+  if (issuerCache.size > ISSUER_CACHE_SIZE) {
+    issuerCache.delete(issuerCache.keys().next().value!)
+  }
+
+  return issuer
+}
 
 /**
  * Signs a single chunk address into a postage stamp envelope.
@@ -31,7 +55,7 @@ export function stamp(
   return {
     batchId: batch,
     index,
-    issuer: privateKey.publicKey().address(),
+    issuer: issuerOf(privateKey),
     signature,
     timestamp,
   }
